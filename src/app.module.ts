@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfig } from './config/typeorm.config';
+import { UserModule } from './user/user.module';
+import { TokenModule } from './token/token.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
 	imports: [
@@ -13,6 +16,9 @@ import { TypeOrmConfig } from './config/typeorm.config';
 			inject: [ConfigService],
 			useFactory: TypeOrmConfig,
 		}),
+		UserModule,
+		TokenModule,
+		MailModule,
 	],
 	controllers: [],
 	providers: [],
