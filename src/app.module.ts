@@ -10,6 +10,7 @@ import { MailModule } from './mail/mail.module';
 	imports: [
 		ConfigModule.forRoot({
 			envFilePath: `.${process.env.NODE_ENV}.env`,
+			//isGlobal: true,
 		}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],

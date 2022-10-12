@@ -5,11 +5,15 @@ import { Repository } from 'typeorm';
 import { TokenService } from 'src/token/token.service';
 import { hash } from 'bcryptjs';
 import { v4 } from 'uuid';
+import { MailService } from 'src/mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User) private readonly userRepo: Repository<User>,
-		private readonly tokenService: TokenService
+		private readonly tokenService: TokenService,
+		private readonly mailService: MailService,
+		private readonly configService: ConfigService
 	) {}
 	async registration(email: string, password: string) {
 		const potentialUser = await this.userRepo.findOne({
@@ -22,10 +26,12 @@ export class UserService {
 		const activationLink = v4();
 		const user = this.userRepo.create({ email, password: passwordHash });
 		await this.userRepo.save(user);
-		// await mailService.sendActivationMail(
-		// 	email,
-		// 	`${process.env.API_URL}/api/user/activate-user/${activationLink}`
-		// );
+		await this.mailService.sendActivationMail(
+			email,
+			`${this.configService.get(
+				'API_URL'
+			)}/api/user/activate-user/${activationLink}`
+		);
 		const userData = {
 			email: user.email,
 			id: user.id,
