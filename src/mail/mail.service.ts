@@ -23,7 +23,7 @@ export class MailService {
 				<div style="color: #fff;text-align:center; width:300px; padding: 10px 20px; margin:0 auto; background-color: #fc8507; border-radius: 10px;">
 					<h1 style="color: #fff; font-weight: bold;">Привет дорогой друг!</h1>
 					<span style="color: #fff; font-weight: 500; font-size: 20px; display: block;"
-						>Спасибо что зарегестрировался на нашем сайте!</span
+						>Спасибо что зарегистрировался на нашем сайте!</span
 					>
 					<br />
 					<a style="font-size: 16px; display: block;" href="${link}"

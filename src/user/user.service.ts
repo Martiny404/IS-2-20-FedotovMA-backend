@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
@@ -16,36 +20,58 @@ export class UserService {
 		private readonly configService: ConfigService
 	) {}
 	async registration(email: string, password: string) {
-		const potentialUser = await this.userRepo.findOne({
-			where: { email },
-		});
-		if (potentialUser) {
-			throw new Error('Пользователь уже существует!');
-		}
-		const passwordHash = await hash(password, 5);
-		const activationLink = v4();
-		const user = this.userRepo.create({ email, password: passwordHash });
-		await this.userRepo.save(user);
-		await this.mailService.sendActivationMail(
-			email,
-			`${this.configService.get(
-				'API_URL'
-			)}/api/user/activate-user/${activationLink}`
-		);
-		const userData = {
-			email: user.email,
-			id: user.id,
-			isActivated: user.isActivated,
-		};
-		const tokens = await this.tokenService.generateTokens(userData);
-		if (tokens)
-			await this.tokenService.saveRefreshToken(
-				userData.id,
-				tokens.refreshToken
+		try {
+			const potentialUser = await this.userRepo.findOne({
+				where: { email },
+			});
+			if (potentialUser) {
+				throw new BadRequestException('Пользователь уже существует!');
+			}
+			const passwordHash = await hash(password, 5);
+			const activationLink = v4();
+			const user = this.userRepo.create({
+				email,
+				password: passwordHash,
+				activation_link: activationLink,
+			});
+			await this.userRepo.save(user);
+			await this.mailService.sendActivationMail(
+				email,
+				`${this.configService.get(
+					'API_URL'
+				)}/api/user/activate/${activationLink}`
 			);
-		return {
-			...tokens,
-			user: userData,
-		};
+			const userData = {
+				email: user.email,
+				id: user.id,
+				isActivated: user.isActivated,
+			};
+			const tokens = await this.tokenService.generateTokens(userData);
+			if (tokens)
+				await this.tokenService.saveRefreshToken(
+					userData.id,
+					tokens.refreshToken
+				);
+			return {
+				...tokens,
+				user: userData,
+			};
+		} catch (e) {
+			throw new InternalServerErrorException('Ошибка от сервера: ' + e.message);
+		}
+	}
+	async activate(activationLink: string) {
+		try {
+			const user = await this.userRepo.findOne({
+				where: { activation_link: activationLink },
+			});
+			if (!user) {
+				throw new BadRequestException('Пользователь не найден');
+			}
+			user.isActivated = true;
+			await this.userRepo.save(user);
+		} catch (e) {
+			throw new InternalServerErrorException('Ошибка от сервера: ' + e.message);
+		}
 	}
 }
