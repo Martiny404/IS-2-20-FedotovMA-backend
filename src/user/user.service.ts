@@ -57,7 +57,7 @@ export class UserService {
 				user: userData,
 			};
 		} catch (e) {
-			throw new InternalServerErrorException('Ошибка от сервера: ' + e.message);
+			throw e;
 		}
 	}
 	async activate(activationLink: string) {
@@ -71,7 +71,7 @@ export class UserService {
 			user.isActivated = true;
 			await this.userRepo.save(user);
 		} catch (e) {
-			throw new InternalServerErrorException('Ошибка от сервера: ' + e.message);
+			throw e;
 		}
 	}
 }

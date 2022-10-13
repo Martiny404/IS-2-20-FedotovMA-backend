@@ -8,8 +8,16 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Post('registration')
-	registration(@Body() userDto: CreateUserDto) {
-		return this.userService.registration(userDto.email, userDto.password);
+	async registration(@Body() userDto: CreateUserDto, @Res() res: Response) {
+		const user = await this.userService.registration(
+			userDto.email,
+			userDto.password
+		);
+		res.cookie('refreshToken', user.refreshToken, {
+			httpOnly: true,
+			maxAge: 900000,
+		});
+		return res.json(user);
 	}
 	@Get('activate/:link')
 	async activate(@Param('link') activationLink: string, @Res() res: Response) {
