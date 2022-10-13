@@ -19,6 +19,15 @@ export class UserController {
 		});
 		return res.json(user);
 	}
+	@Post('login')
+	async login(@Body() userDto: CreateUserDto, @Res() res: Response) {
+		const user = await this.userService.login(userDto.email, userDto.password);
+		res.cookie('refreshToken', user.refreshToken, {
+			httpOnly: true,
+			maxAge: 900000,
+		});
+		return res.status(200).json(user);
+	}
 	@Get('activate/:link')
 	async activate(@Param('link') activationLink: string, @Res() res: Response) {
 		await this.userService.activate(activationLink);

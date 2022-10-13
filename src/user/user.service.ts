@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { TokenService } from 'src/token/token.service';
-import { hash } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
 import { v4 } from 'uuid';
 import { MailService } from 'src/mail/mail.service';
 import { ConfigService } from '@nestjs/config';
@@ -47,6 +47,38 @@ export class UserService {
 				isActivated: user.isActivated,
 			};
 			const tokens = await this.tokenService.generateTokens(userData);
+			if (tokens)
+				await this.tokenService.saveRefreshToken(
+					userData.id,
+					tokens.refreshToken
+				);
+			return {
+				...tokens,
+				user: userData,
+			};
+		} catch (e) {
+			throw e;
+		}
+	}
+	async login(email: string, password: string) {
+		try {
+			const user = await this.userRepo.findOne({ where: { email } });
+
+			if (!user) {
+				throw new BadRequestException('Пользователь не найден');
+			}
+			const isPasswodCorrect = await compare(password, user.password);
+
+			if (!isPasswodCorrect) {
+				throw new BadRequestException('Неверный логин или пароль');
+			}
+			const userData = {
+				email: user.email,
+				id: user.id,
+				isActivated: user.isActivated,
+			};
+			const tokens = await this.tokenService.generateTokens(userData);
+
 			if (tokens)
 				await this.tokenService.saveRefreshToken(
 					userData.id,
