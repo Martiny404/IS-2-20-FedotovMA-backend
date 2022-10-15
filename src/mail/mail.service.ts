@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -34,7 +34,9 @@ export class MailService {
         `,
 			});
 		} catch (e) {
-			throw new Error(e.message);
+			throw new InternalServerErrorException(
+				'Ошибка при отправке письма на почту'
+			);
 		}
 	}
 }

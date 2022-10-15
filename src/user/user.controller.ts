@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 
@@ -28,6 +28,14 @@ export class UserController {
 		});
 		return res.status(200).json(user);
 	}
+	@Post('logout')
+	async logout(@Res() res: Response, @Req() req: Request) {
+		const refreshToken = req.cookies.refreshToken;
+		const message = await this.userService.logout(refreshToken);
+		res.clearCookie('refreshToken');
+		return res.status(200).json(message);
+	}
+
 	@Get('activate/:link')
 	async activate(@Param('link') activationLink: string, @Res() res: Response) {
 		await this.userService.activate(activationLink);

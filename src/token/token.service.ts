@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AuthUser } from 'src/types/user-auth.inteface';
 import { Repository } from 'typeorm';
 import { Token } from './token.entity';
 
@@ -10,7 +11,7 @@ export class TokenService {
 		@InjectRepository(Token) private readonly tokenRepo: Repository<Token>,
 		private readonly jwtService: JwtService
 	) {}
-	async generateTokens(payload: any) {
+	async generateTokens(payload: AuthUser) {
 		try {
 			const accessToken = await this.jwtService.signAsync(
 				{ ...payload },
@@ -29,9 +30,9 @@ export class TokenService {
 				refreshToken,
 			};
 		} catch (e) {
-			if (e instanceof Error) {
-				throw new Error('Ошибка при генерации токена! :' + e.message);
-			}
+			throw new InternalServerErrorException(
+				'Ошибка при генерации токена: ' + e.message
+			);
 		}
 	}
 	async saveRefreshToken(userId: number, refreshToken: string) {
@@ -53,9 +54,18 @@ export class TokenService {
 
 			await this.tokenRepo.save(token);
 		} catch (e) {
-			if (e instanceof Error) {
-				throw new Error('Ошибка при сохранении токена: ' + e.message);
-			}
+			throw new InternalServerErrorException(
+				'Ошибка при сохранении токена: ' + e.message
+			);
+		}
+	}
+	async removeToken(token: string) {
+		try {
+			await this.tokenRepo.delete({ refreshToken: token });
+		} catch (e) {
+			throw new InternalServerErrorException(
+				'Ошибка при удалении токена: ' + e.message
+			);
 		}
 	}
 }

@@ -11,6 +11,8 @@ import { compare, hash } from 'bcryptjs';
 import { v4 } from 'uuid';
 import { MailService } from 'src/mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { AuthUser } from 'src/types/user-auth.inteface';
+
 @Injectable()
 export class UserService {
 	constructor(
@@ -57,7 +59,9 @@ export class UserService {
 				user: userData,
 			};
 		} catch (e) {
-			throw e;
+			throw new InternalServerErrorException(
+				'Непредвиденная ошибка при регистрации'
+			);
 		}
 	}
 	async login(email: string, password: string) {
@@ -72,7 +76,7 @@ export class UserService {
 			if (!isPasswodCorrect) {
 				throw new BadRequestException('Неверный логин или пароль');
 			}
-			const userData = {
+			const userData: AuthUser = {
 				email: user.email,
 				id: user.id,
 				isActivated: user.isActivated,
@@ -89,7 +93,9 @@ export class UserService {
 				user: userData,
 			};
 		} catch (e) {
-			throw e;
+			throw new InternalServerErrorException(
+				'Непредвиденная ошибка при входе в систему'
+			);
 		}
 	}
 	async activate(activationLink: string) {
@@ -103,7 +109,22 @@ export class UserService {
 			user.isActivated = true;
 			await this.userRepo.save(user);
 		} catch (e) {
-			throw e;
+			throw new InternalServerErrorException(
+				'Непредвиденная ошибка при активации'
+			);
+		}
+	}
+
+	async logout(refreshToken: string) {
+		try {
+			await this.tokenService.removeToken(refreshToken);
+			return {
+				message: 'Вы успешно вышли из системы!',
+			};
+		} catch (e) {
+			throw new InternalServerErrorException(
+				'Непредвиденная ошибка при выходе из системы'
+			);
 		}
 	}
 }
