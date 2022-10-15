@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Injectable,
 	InternalServerErrorException,
+	UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
@@ -43,7 +44,7 @@ export class UserService {
 					'API_URL'
 				)}/api/user/activate/${activationLink}`
 			);
-			const userData = {
+			const userData: AuthUser = {
 				email: user.email,
 				id: user.id,
 				isActivated: user.isActivated,
@@ -124,6 +125,48 @@ export class UserService {
 		} catch (e) {
 			throw new InternalServerErrorException(
 				'Непредвиденная ошибка при выходе из системы'
+			);
+		}
+	}
+
+	async refresh(token: string) {
+		if (!token) {
+			throw new UnauthorizedException('Не авторизован!');
+		}
+		const userData = await this.tokenService.validateToken(token);
+		const tokenFromDb = await this.tokenService.findToken(token);
+		if (!userData || !tokenFromDb) {
+			throw new UnauthorizedException('Не авторизован!');
+		}
+
+		const user = await this.userRepo.findOne({ where: { id: userData.id } });
+
+		const freshUserData: AuthUser = {
+			email: user.email,
+			id: user.id,
+			isActivated: user.isActivated,
+		};
+
+		const tokens = await this.tokenService.generateTokens(freshUserData);
+
+		await this.tokenService.saveRefreshToken(
+			freshUserData.id,
+			tokens.refreshToken
+		);
+
+		return {
+			...tokens,
+			user: freshUserData,
+		};
+	}
+
+	async getAll() {
+		try {
+			const users = await this.userRepo.find();
+			return users;
+		} catch (e) {
+			throw new InternalServerErrorException(
+				'Ошибка при получении спика пользователей'
 			);
 		}
 	}

@@ -16,13 +16,13 @@ export class TokenService {
 			const accessToken = await this.jwtService.signAsync(
 				{ ...payload },
 				{
-					expiresIn: '5m',
+					expiresIn: '15s',
 				}
 			);
 			const refreshToken = await this.jwtService.signAsync(
 				{ ...payload },
 				{
-					expiresIn: '15m',
+					expiresIn: '30s',
 				}
 			);
 			return {
@@ -67,5 +67,21 @@ export class TokenService {
 				'Ошибка при удалении токена: ' + e.message
 			);
 		}
+	}
+
+	async validateToken(token: string) {
+		try {
+			const userData = await this.jwtService.verifyAsync<AuthUser>(token);
+			return userData;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	async findToken(token: string) {
+		const data = await this.tokenRepo.findOne({
+			where: { refreshToken: token },
+		});
+		return data;
 	}
 }

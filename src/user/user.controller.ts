@@ -1,5 +1,15 @@
-import { Body, Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Post,
+	Req,
+	Res,
+	UseGuards,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
+import { JwtTokenGuard } from 'src/guards/jwt-token.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 
@@ -40,5 +50,17 @@ export class UserController {
 	async activate(@Param('link') activationLink: string, @Res() res: Response) {
 		await this.userService.activate(activationLink);
 		return res.redirect('https://ya.ru');
+	}
+
+	@Post('refresh')
+	async refresh(@Res() res: Response, @Req() req: Request) {
+		const refreshToken = req.cookies.refreshToken;
+		const d = this.userService.refresh(refreshToken);
+	}
+
+	@UseGuards(JwtTokenGuard)
+	@Get('/')
+	async getAll() {
+		return this.userService.getAll();
 	}
 }
