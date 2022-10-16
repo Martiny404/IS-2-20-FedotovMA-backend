@@ -5,6 +5,7 @@ import { TypeOrmConfig } from './config/typeorm.config';
 import { UserModule } from './user/user.module';
 import { TokenModule } from './token/token.module';
 import { MailModule } from './mail/mail.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
 	imports: [
@@ -12,13 +13,14 @@ import { MailModule } from './mail/mail.module';
 			envFilePath: `.${process.env.NODE_ENV}.env`,
 		}),
 		TypeOrmModule.forRootAsync({
-			imports: [ConfigModule],
-			inject: [ConfigService],
+			imports: [],
+			inject: [],
 			useFactory: TypeOrmConfig,
 		}),
 		UserModule,
 		TokenModule,
 		MailModule,
+		AuthModule,
 	],
 	controllers: [],
 	providers: [],
