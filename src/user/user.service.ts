@@ -133,7 +133,7 @@ export class UserService {
 		if (!token) {
 			throw new UnauthorizedException('Не авторизован!');
 		}
-		const userData = await this.tokenService.validateToken(token);
+		const userData = this.tokenService.validateAccessToken(token);
 		const tokenFromDb = await this.tokenService.findToken(token);
 		if (!userData || !tokenFromDb) {
 			throw new UnauthorizedException('Не авторизован!');

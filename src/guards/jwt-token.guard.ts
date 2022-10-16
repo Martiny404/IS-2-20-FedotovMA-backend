@@ -6,10 +6,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
+import { TokenService } from 'src/token/token.service';
 
 @Injectable()
 export class JwtTokenGuard implements CanActivate {
-	constructor(private readonly jwtService: JwtService) {}
+	constructor(
+		private readonly jwtService: JwtService,
+		private readonly tokenService: TokenService
+	) {}
 
 	canActivate(
 		context: ExecutionContext
@@ -24,7 +28,12 @@ export class JwtTokenGuard implements CanActivate {
 					message: 'Нет авторизации',
 				});
 			}
-			const user = this.jwtService.verify(token);
+			const user = this.tokenService.validateAccessToken(token);
+			if (!user) {
+				throw new UnauthorizedException({
+					message: 'Нет авторизации',
+				});
+			}
 			request.user = user;
 			return true;
 		} catch (e) {

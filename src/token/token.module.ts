@@ -13,8 +13,8 @@ import { TokenService } from './token.service';
 		TokenModule,
 		TypeOrmModule.forFeature([Token, User]),
 		JwtModule.registerAsync({
-			imports: [ConfigModule],
-			inject: [ConfigService],
+			imports: [],
+			inject: [],
 			useFactory: JwtConfig,
 		}),
 	],

@@ -17,12 +17,14 @@ export class TokenService {
 				{ ...payload },
 				{
 					expiresIn: '15s',
+					secret: process.env.JWT_SECRET,
 				}
 			);
 			const refreshToken = await this.jwtService.signAsync(
 				{ ...payload },
 				{
 					expiresIn: '30s',
+					secret: process.env.JWT_SECRET_REFRESH,
 				}
 			);
 			return {
@@ -69,9 +71,22 @@ export class TokenService {
 		}
 	}
 
-	async validateToken(token: string) {
+	validateAccessToken(token: string) {
 		try {
-			const userData = await this.jwtService.verifyAsync<AuthUser>(token);
+			const userData = this.jwtService.verify<AuthUser>(token, {
+				secret: process.env.JWT_SECRET,
+			});
+			return userData;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	validateRefreshToken(token: string) {
+		try {
+			const userData = this.jwtService.verify<AuthUser>(token, {
+				secret: process.env.JWT_SECRET_REFRESH,
+			});
 			return userData;
 		} catch (e) {
 			return null;
