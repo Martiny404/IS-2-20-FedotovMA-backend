@@ -42,9 +42,14 @@ export class AuthController {
 		return res.redirect('https://ya.ru');
 	}
 
-	@Post('refresh')
+	@Get('refresh')
 	async refresh(@Res() res: Response, @Req() req: Request) {
 		const refreshToken = req.cookies.refreshToken;
-		const d = this.authService.refresh(refreshToken);
+		const userData = await this.authService.refresh(refreshToken);
+		res.cookie('refreshToken', userData.refreshToken, {
+			httpOnly: true,
+			maxAge: 900000,
+		});
+		return res.status(200).json(userData);
 	}
 }

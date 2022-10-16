@@ -7,9 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcryptjs';
 import { MailService } from 'src/mail/mail.service';
+import { RoleService } from 'src/role/role.service';
 import { TokenService } from 'src/token/token.service';
 import { AuthUser } from 'src/types/user-auth.inteface';
 import { User } from 'src/user/user.entity';
+import { makeUserData } from 'src/utils/makeUserData';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 
@@ -18,7 +20,8 @@ export class AuthService {
 	constructor(
 		@InjectRepository(User) private readonly userRepo: Repository<User>,
 		private readonly tokenService: TokenService,
-		private readonly mailService: MailService
+		private readonly mailService: MailService,
+		private readonly roleService: RoleService
 	) {}
 
 	async registration(email: string, password: string) {
@@ -31,21 +34,20 @@ export class AuthService {
 			}
 			const passwordHash = await hash(password, 5);
 			const activationLink = v4();
+			const userRole = await this.roleService.getRoleByValue('user');
+
 			const user = this.userRepo.create({
 				email,
 				password: passwordHash,
 				activation_link: activationLink,
+				role: { id: userRole.id },
 			});
 			await this.userRepo.save(user);
 			await this.mailService.sendActivationMail(
 				email,
 				`${process.env.API_URL}/api/auth/activate/${activationLink}`
 			);
-			const userData: AuthUser = {
-				email: user.email,
-				id: user.id,
-				isActivated: user.isActivated,
-			};
+			const userData = makeUserData(user, userRole.roleName);
 			const tokens = await this.tokenService.generateTokens(userData);
 			if (tokens)
 				await this.tokenService.saveRefreshToken(
@@ -62,7 +64,12 @@ export class AuthService {
 	}
 	async login(email: string, password: string) {
 		try {
-			const user = await this.userRepo.findOne({ where: { email } });
+			const user = await this.userRepo.findOne({
+				where: { email },
+				relations: {
+					role: true,
+				},
+			});
 
 			if (!user) {
 				throw new BadRequestException('Пользователь не найден');
@@ -72,11 +79,7 @@ export class AuthService {
 			if (!isPasswodCorrect) {
 				throw new BadRequestException('Неверный логин или пароль');
 			}
-			const userData: AuthUser = {
-				email: user.email,
-				id: user.id,
-				isActivated: user.isActivated,
-			};
+			const userData = makeUserData(user, user.role.roleName);
 			const tokens = await this.tokenService.generateTokens(userData);
 
 			if (tokens)
@@ -121,33 +124,37 @@ export class AuthService {
 	}
 
 	async refresh(token: string) {
-		if (!token) {
-			throw new UnauthorizedException('Не авторизован!');
+		try {
+			if (!token) {
+				throw new UnauthorizedException('Не авторизован!');
+			}
+			const userData = this.tokenService.validateRefreshToken(token);
+			const tokenFromDb = await this.tokenService.findToken(token);
+			if (!userData || !tokenFromDb) {
+				throw new UnauthorizedException('Не авторизован!');
+			}
+			const user = await this.userRepo.findOne({
+				where: { id: userData.id },
+				relations: {
+					role: true,
+				},
+			});
+
+			const freshUserData = makeUserData(user, user.role.roleName);
+
+			const tokens = await this.tokenService.generateTokens(freshUserData);
+
+			await this.tokenService.saveRefreshToken(
+				freshUserData.id,
+				tokens.refreshToken
+			);
+
+			return {
+				...tokens,
+				user: freshUserData,
+			};
+		} catch (e) {
+			throw e;
 		}
-		const userData = this.tokenService.validateAccessToken(token);
-		const tokenFromDb = await this.tokenService.findToken(token);
-		if (!userData || !tokenFromDb) {
-			throw new UnauthorizedException('Не авторизован!');
-		}
-
-		const user = await this.userRepo.findOne({ where: { id: userData.id } });
-
-		const freshUserData: AuthUser = {
-			email: user.email,
-			id: user.id,
-			isActivated: user.isActivated,
-		};
-
-		const tokens = await this.tokenService.generateTokens(freshUserData);
-
-		await this.tokenService.saveRefreshToken(
-			freshUserData.id,
-			tokens.refreshToken
-		);
-
-		return {
-			...tokens,
-			user: freshUserData,
-		};
 	}
 }

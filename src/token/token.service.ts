@@ -23,7 +23,7 @@ export class TokenService {
 			const refreshToken = await this.jwtService.signAsync(
 				{ ...payload },
 				{
-					expiresIn: '30s',
+					expiresIn: '10m',
 					secret: process.env.JWT_SECRET_REFRESH,
 				}
 			);
