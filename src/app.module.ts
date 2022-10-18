@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfig } from './config/typeorm.config';
 import { UserModule } from './user/user.module';
@@ -7,6 +7,12 @@ import { TokenModule } from './token/token.module';
 import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { RoleModule } from './role/role.module';
+import { ProductModule } from './product/product.module';
+import { CategoryModule } from './category/category.module';
+
+import { BrandModule } from './brand/brand.module';
+
+import { OptionModule } from './option/option.module';
 
 @Module({
 	imports: [
@@ -23,6 +29,10 @@ import { RoleModule } from './role/role.module';
 		MailModule,
 		AuthModule,
 		RoleModule,
+		ProductModule,
+		CategoryModule,
+		BrandModule,
+		OptionModule,
 	],
 	controllers: [],
 	providers: [],

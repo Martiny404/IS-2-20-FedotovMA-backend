@@ -1,5 +1,6 @@
+import { Rating } from 'src/product/rating.entity';
 import { Role } from 'src/role/role.entity';
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Base } from '../utils/base';
 
 @Entity()
@@ -18,4 +19,7 @@ export class User extends Base {
 	@ManyToOne(() => Role, role => role.users)
 	@JoinColumn({ name: 'role_id' })
 	role: Role;
+
+	@OneToMany(() => Rating, rating => rating.users)
+	rate: Rating;
 }
