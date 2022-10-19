@@ -33,7 +33,13 @@ export class ProductService {
 	}
 	async byId(id: number) {
 		try {
-			return await this.productRepo.findOneBy({ id });
+			return await this.productRepo.findOne({
+				where: { id },
+				relations: {
+					brand: true,
+					category: true,
+				},
+			});
 		} catch (e) {
 			throw e;
 		}

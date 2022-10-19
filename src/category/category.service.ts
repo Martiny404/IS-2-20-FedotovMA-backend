@@ -30,4 +30,11 @@ export class CategoryService {
 			throw e;
 		}
 	}
+
+	async byName(categoryName: string) {
+		return await this.categoryRepo.findOne({ where: { name: categoryName } });
+	}
+	async byId(id: number) {
+		return await this.categoryRepo.findOne({ where: { id } });
+	}
 }
