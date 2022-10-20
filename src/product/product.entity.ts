@@ -1,5 +1,6 @@
 import { Brand } from 'src/brand/brand.entity';
 import { Category } from 'src/category/category.entity';
+import { ProductValues } from 'src/option/product-values.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Base } from '../utils/base';
 import { Rating } from './rating.entity';
@@ -21,8 +22,14 @@ export class Product extends Base {
 	@Column({ type: 'int', default: 0 })
 	views: number;
 
+	@Column({ type: 'varchar', nullable: true })
+	description: string;
+
 	@Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.ON_SALE })
 	status: ProductStatus;
+
+	@Column({ type: 'boolean', default: true })
+	hidden: boolean;
 
 	@Column({ type: 'float' })
 	price: number;
@@ -40,4 +47,7 @@ export class Product extends Base {
 
 	@OneToMany(() => Rating, rating => rating.products)
 	rating: Rating[];
+
+	@OneToMany(() => ProductValues, productValues => productValues.product)
+	productValues: ProductValues[];
 }

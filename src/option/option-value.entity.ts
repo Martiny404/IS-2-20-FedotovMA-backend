@@ -1,9 +1,19 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { Base } from '../utils/base';
+import {
+	Column,
+	Entity,
+	JoinColumn,
+	ManyToOne,
+	OneToMany,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Option } from './option.entity';
+import { ProductValues } from './product-values.entity';
 
 @Entity({ name: 'option_value' })
-export class OptionValue extends Base {
+export class OptionValue {
+	@PrimaryGeneratedColumn()
+	id: number;
+
 	@Column({ type: 'varchar' })
 	value: string;
 
@@ -12,4 +22,7 @@ export class OptionValue extends Base {
 	})
 	@JoinColumn({ name: 'option_id' })
 	option: Option;
+
+	@OneToMany(() => ProductValues, productValues => productValues.productValue)
+	productValues: ProductValues[];
 }

@@ -6,10 +6,9 @@ import {
 	OneToOne,
 } from 'typeorm';
 import { User } from '../user/user.entity';
-import { Base } from '../utils/base';
 
 @Entity()
-export class Token extends Base {
+export class Token {
 	@PrimaryGeneratedColumn()
 	id: number;
 

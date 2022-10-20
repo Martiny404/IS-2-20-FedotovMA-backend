@@ -1,4 +1,11 @@
-import { IsNumber, IsPositive, IsString, Length, Max } from 'class-validator';
+import {
+	IsArray,
+	IsNumber,
+	IsPositive,
+	IsString,
+	Length,
+	Max,
+} from 'class-validator';
 
 export class CreateProductDto {
 	@IsString()

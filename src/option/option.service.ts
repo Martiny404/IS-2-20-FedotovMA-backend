@@ -63,6 +63,16 @@ export class OptionService {
 		return option;
 	}
 
+	async getByIds(valuesIds: number[]) {
+		const findOpt = valuesIds.map(id => ({ id }));
+
+		const values = await this.optionValueRepo.find({
+			where: findOpt,
+			relations: { option: true },
+		});
+		return values;
+	}
+
 	async byId(id: number) {
 		try {
 			const option = await this.optionRepo.findOne({

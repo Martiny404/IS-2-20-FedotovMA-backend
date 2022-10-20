@@ -1,10 +1,17 @@
 import { Category } from 'src/category/category.entity';
 import { Product } from 'src/product/product.entity';
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
-import { Base } from '../utils/base';
+import {
+	Column,
+	Entity,
+	ManyToMany,
+	OneToMany,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
-export class Brand extends Base {
+export class Brand {
+	@PrimaryGeneratedColumn()
+	id: number;
 	@Column({ type: 'varchar', unique: true })
 	name: string;
 

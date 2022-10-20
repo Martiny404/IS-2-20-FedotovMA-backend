@@ -32,9 +32,20 @@ export class CategoryService {
 	}
 
 	async byName(categoryName: string) {
-		return await this.categoryRepo.findOne({ where: { name: categoryName } });
+		const category = await this.categoryRepo.findOne({
+			where: { name: categoryName },
+			relations: { options: true },
+		});
+		if (!category) {
+			throw new BadRequestException('Категории не существует!');
+		}
+		return category;
 	}
 	async byId(id: number) {
 		return await this.categoryRepo.findOne({ where: { id } });
+	}
+
+	async getAllOptions() {
+		return await this.categoryRepo.find({ relations: { options: true } });
 	}
 }

@@ -13,7 +13,6 @@ export class CategoryController {
 
 	@Get('/:name')
 	async byName(@Param('name') name: string) {
-		const category = await this.categoryService.byName(name);
-		return category;
+		return this.categoryService.byName(name);
 	}
 }

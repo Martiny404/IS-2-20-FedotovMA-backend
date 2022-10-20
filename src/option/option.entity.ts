@@ -1,10 +1,19 @@
 import { Category } from 'src/category/category.entity';
-import { Column, Entity, JoinColumn, ManyToMany, OneToMany } from 'typeorm';
-import { Base } from '../utils/base';
+import {
+	Column,
+	Entity,
+	ManyToMany,
+	OneToMany,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
+
 import { OptionValue } from './option-value.entity';
 
 @Entity()
-export class Option extends Base {
+export class Option {
+	@PrimaryGeneratedColumn()
+	id: number;
+
 	@Column({ type: 'varchar', unique: true, name: 'option_name' })
 	optionName: string;
 
