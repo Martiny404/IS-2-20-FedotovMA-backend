@@ -74,16 +74,14 @@ export class OptionService {
 	}
 
 	async byId(id: number) {
-		try {
-			const option = await this.optionRepo.findOne({
-				where: { id },
-				relations: {
-					values: true,
-				},
-			});
-			return option;
-		} catch (e) {
-			throw e;
-		}
+		const option = await this.optionRepo.findOne({
+			where: { id },
+			relations: {
+				values: true,
+			},
+		});
+
+		if (!option) throw new BadRequestException('Опции не существует!');
+		return option;
 	}
 }

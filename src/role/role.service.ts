@@ -10,31 +10,23 @@ export class RoleService {
 		@InjectRepository(Role) private readonly roleRepo: Repository<Role>
 	) {}
 	async createRole(dto: CreateRoleDto) {
-		try {
-			const lowerRole = dto.value.toLowerCase();
-			const isRoleExist = await this.getRoleByValue(lowerRole);
+		const lowerRole = dto.value.toLowerCase();
+		const isRoleExist = await this.getRoleByValue(lowerRole);
 
-			if (isRoleExist) {
-				throw new BadRequestException('Роль уже существует!');
-			}
-
-			const role = this.roleRepo.create({
-				roleName: lowerRole,
-			});
-			await this.roleRepo.save(role);
-			return role;
-		} catch (e) {
-			throw e;
+		if (isRoleExist) {
+			throw new BadRequestException('Роль уже существует!');
 		}
+
+		const role = this.roleRepo.create({
+			roleName: lowerRole,
+		});
+		await this.roleRepo.save(role);
+		return role;
 	}
 	async getRoleByValue(value: string) {
-		try {
-			const role = await this.roleRepo.findOne({
-				where: { roleName: value },
-			});
-			return role;
-		} catch (e) {
-			throw e;
-		}
+		const role = await this.roleRepo.findOne({
+			where: { roleName: value },
+		});
+		return role;
 	}
 }

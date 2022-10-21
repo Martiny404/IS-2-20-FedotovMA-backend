@@ -13,6 +13,7 @@ import { CategoryModule } from './category/category.module';
 import { BrandModule } from './brand/brand.module';
 
 import { OptionModule } from './option/option.module';
+import { FileModule } from './file/file.module';
 
 @Module({
 	imports: [
@@ -33,6 +34,7 @@ import { OptionModule } from './option/option.module';
 		CategoryModule,
 		BrandModule,
 		OptionModule,
+		FileModule,
 	],
 	controllers: [],
 	providers: [],

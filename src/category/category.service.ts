@@ -11,24 +11,18 @@ export class CategoryService {
 		private readonly categoryRepo: Repository<Category>
 	) {}
 	async create({ name }: CreateCategoryDto) {
-		try {
-			const isCategoryExist = await this.categoryRepo.findOne({
-				where: { name },
-			});
+		const isCategoryExist = await this.categoryRepo.findOne({
+			where: { name },
+		});
 
-			if (isCategoryExist) {
-				throw new BadRequestException(
-					'Категория с таким именем уже существует!'
-				);
-			}
-
-			const category = this.categoryRepo.create({
-				name,
-			});
-			return await this.categoryRepo.save(category);
-		} catch (e) {
-			throw e;
+		if (isCategoryExist) {
+			throw new BadRequestException('Категория с таким именем уже существует!');
 		}
+
+		const category = this.categoryRepo.create({
+			name,
+		});
+		return await this.categoryRepo.save(category);
 	}
 
 	async byName(categoryName: string) {

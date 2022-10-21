@@ -3,6 +3,7 @@ import { Category } from 'src/category/category.entity';
 import { ProductValues } from 'src/option/product-values.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Base } from '../utils/base';
+import { ProductImages } from './product-imgs.entity';
 import { Rating } from './rating.entity';
 
 export enum ProductStatus {
@@ -22,6 +23,9 @@ export class Product extends Base {
 	@Column({ type: 'int', default: 0 })
 	views: number;
 
+	@Column({ type: 'varchar', nullable: true, name: 'short_info' })
+	shortInfo: string;
+
 	@Column({ type: 'varchar', nullable: true })
 	description: string;
 
@@ -36,6 +40,9 @@ export class Product extends Base {
 
 	@Column({ type: 'int', nullable: true })
 	discount_percentage: number;
+
+	@OneToMany(() => ProductImages, productImages => productImages.product)
+	images: ProductImages[];
 
 	@ManyToOne(() => Category, category => category.products)
 	@JoinColumn({ name: 'category_id' })

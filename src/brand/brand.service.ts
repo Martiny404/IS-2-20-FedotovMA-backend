@@ -12,22 +12,18 @@ export class BrandService {
 		private readonly categoryService: CategoryService
 	) {}
 	async create({ name }: CreateBrandDto) {
-		try {
-			const isBrandExist = await this.brandRepo.findOne({ where: { name } });
+		const isBrandExist = await this.brandRepo.findOne({ where: { name } });
 
-			if (isBrandExist) {
-				throw new BadRequestException(
-					'Производитель с таким именем уже существует!'
-				);
-			}
-
-			const brand = this.brandRepo.create({
-				name,
-			});
-			return await this.brandRepo.save(brand);
-		} catch (e) {
-			throw e;
+		if (isBrandExist) {
+			throw new BadRequestException(
+				'Производитель с таким именем уже существует!'
+			);
 		}
+
+		const brand = this.brandRepo.create({
+			name,
+		});
+		return await this.brandRepo.save(brand);
 	}
 
 	async addCategories(id: number, categories: number[]) {

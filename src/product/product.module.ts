@@ -9,8 +9,8 @@ import { Rating } from './rating.entity';
 import { User } from 'src/user/user.entity';
 
 import { OptionModule } from 'src/option/option.module';
-import { OptionValue } from 'src/option/option-value.entity';
 import { ProductValues } from 'src/option/product-values.entity';
+import { ProductImages } from './product-imgs.entity';
 
 @Module({
 	providers: [ProductService],
@@ -21,6 +21,7 @@ import { ProductValues } from 'src/option/product-values.entity';
 			Category,
 			Brand,
 			Rating,
+			ProductImages,
 			User,
 			ProductValues,
 		]),
