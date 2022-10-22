@@ -4,24 +4,26 @@ import {
 	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcryptjs';
 import { MailService } from 'src/mail/mail.service';
 import { RoleService } from 'src/role/role.service';
-import { TokenService } from 'src/token/token.service';
 import { AuthUser } from 'src/types/user-auth.inteface';
 import { User } from 'src/user/user.entity';
 import { makeUserData } from 'src/utils/makeUserData';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
+import { Token } from './token.entity';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		@InjectRepository(User) private readonly userRepo: Repository<User>,
-		private readonly tokenService: TokenService,
+		@InjectRepository(Token) private readonly tokenRepo: Repository<Token>,
 		private readonly mailService: MailService,
-		private readonly roleService: RoleService
+		private readonly roleService: RoleService,
+		private readonly jwtService: JwtService
 	) {}
 
 	async registration(email: string, password: string) {
@@ -48,12 +50,8 @@ export class AuthService {
 				`${process.env.API_URL}/api/auth/activate/${activationLink}`
 			);
 			const userData = makeUserData(user, userRole.roleName);
-			const tokens = await this.tokenService.generateTokens(userData);
-			if (tokens)
-				await this.tokenService.saveRefreshToken(
-					userData.id,
-					tokens.refreshToken
-				);
+			const tokens = await this.generateTokens(userData);
+			if (tokens) await this.saveRefreshToken(userData.id, tokens.refreshToken);
 			return {
 				...tokens,
 				user: userData,
@@ -80,13 +78,9 @@ export class AuthService {
 				throw new BadRequestException('Неверный логин или пароль');
 			}
 			const userData = makeUserData(user, user.role.roleName);
-			const tokens = await this.tokenService.generateTokens(userData);
+			const tokens = await this.generateTokens(userData);
 
-			if (tokens)
-				await this.tokenService.saveRefreshToken(
-					userData.id,
-					tokens.refreshToken
-				);
+			if (tokens) await this.saveRefreshToken(userData.id, tokens.refreshToken);
 			return {
 				...tokens,
 				user: userData,
@@ -112,7 +106,7 @@ export class AuthService {
 
 	async logout(refreshToken: string) {
 		try {
-			await this.tokenService.removeToken(refreshToken);
+			await this.removeToken(refreshToken);
 			return {
 				message: 'Вы успешно вышли из системы!',
 			};
@@ -128,8 +122,10 @@ export class AuthService {
 			if (!token) {
 				throw new UnauthorizedException('Не авторизован!');
 			}
-			const userData = this.tokenService.validateRefreshToken(token);
-			const tokenFromDb = await this.tokenService.findToken(token);
+			const userData = await this.jwtService.verifyAsync<AuthUser>(token, {
+				secret: process.env.JWT_SECRET_REFRESH,
+			});
+			const tokenFromDb = await this.findToken(token);
 			if (!userData || !tokenFromDb) {
 				throw new UnauthorizedException('Не авторизован!');
 			}
@@ -142,12 +138,9 @@ export class AuthService {
 
 			const freshUserData = makeUserData(user, user.role.roleName);
 
-			const tokens = await this.tokenService.generateTokens(freshUserData);
+			const tokens = await this.generateTokens(freshUserData);
 
-			await this.tokenService.saveRefreshToken(
-				freshUserData.id,
-				tokens.refreshToken
-			);
+			await this.saveRefreshToken(freshUserData.id, tokens.refreshToken);
 
 			return {
 				...tokens,
@@ -156,5 +149,74 @@ export class AuthService {
 		} catch (e) {
 			throw e;
 		}
+	}
+
+	async generateTokens(payload: AuthUser) {
+		try {
+			const accessToken = await this.jwtService.signAsync(
+				{ ...payload },
+				{
+					expiresIn: '1m',
+					secret: process.env.JWT_SECRET,
+				}
+			);
+			const refreshToken = await this.jwtService.signAsync(
+				{ ...payload },
+				{
+					expiresIn: '10m',
+					secret: process.env.JWT_SECRET_REFRESH,
+				}
+			);
+			return {
+				accessToken,
+				refreshToken,
+			};
+		} catch (e) {
+			throw new InternalServerErrorException(
+				'Ошибка при генерации токена: ' + e.message
+			);
+		}
+	}
+
+	async saveRefreshToken(userId: number, refreshToken: string) {
+		try {
+			const tokenData = await this.tokenRepo.findOneBy({
+				user: { id: userId },
+			});
+			if (tokenData) {
+				tokenData.refreshToken = refreshToken;
+				return this.tokenRepo.save(tokenData);
+			}
+
+			const data = {
+				refreshToken,
+				user: { id: userId },
+			};
+
+			const token = this.tokenRepo.create(data);
+
+			await this.tokenRepo.save(token);
+		} catch (e) {
+			throw new InternalServerErrorException(
+				'Ошибка при сохранении токена: ' + e.message
+			);
+		}
+	}
+
+	async removeToken(token: string) {
+		try {
+			await this.tokenRepo.delete({ refreshToken: token });
+		} catch (e) {
+			throw new InternalServerErrorException(
+				'Ошибка при удалении токена: ' + e.message
+			);
+		}
+	}
+
+	async findToken(token: string) {
+		const data = await this.tokenRepo.findOne({
+			where: { refreshToken: token },
+		});
+		return data;
 	}
 }
