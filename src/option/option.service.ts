@@ -39,27 +39,33 @@ export class OptionService {
 	}
 
 	async addOptionValues(optionId: number, values: string[]) {
-		const option = await this.optionRepo.findOne({ where: { id: optionId } });
+		const option = await this.optionRepo.findOne({
+			where: { id: optionId },
+			relations: {
+				values: true,
+			},
+		});
 
 		if (!option)
 			throw new BadRequestException('Такой характеристики не существует!');
 
-		const optionValues = await Promise.all(
-			values.map(async value => {
-				try {
-					const optionValue = this.optionValueRepo.create({
-						value,
-						option: { id: optionId },
-					});
-					await this.optionValueRepo.save(optionValue);
-					return optionValue;
-				} catch (e) {
-					throw e;
-				}
-			})
+		const optionValues = [];
+
+		values.forEach(value =>
+			optionValues.push(this.optionValueRepo.create({ value }))
 		);
-		option.values = optionValues;
-		await this.optionRepo.save(option);
+
+		if (option.values && option.values.length > 0) {
+			option.values = [...option.values, ...optionValues];
+		} else {
+			option.values = optionValues;
+		}
+
+		try {
+			await this.optionRepo.save(option);
+		} catch (e) {
+			throw new BadRequestException(e.message);
+		}
 		return option;
 	}
 

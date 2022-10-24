@@ -8,20 +8,12 @@ import { CategoryModule } from 'src/category/category.module';
 import { OptionValue } from './option-value.entity';
 import { Product } from 'src/product/product.entity';
 
-import { ProductValues } from './product-values.entity';
-
 @Module({
 	providers: [OptionService],
 	controllers: [OptionController],
 	exports: [OptionService],
 	imports: [
-		TypeOrmModule.forFeature([
-			Option,
-			Category,
-			OptionValue,
-			Product,
-			ProductValues,
-		]),
+		TypeOrmModule.forFeature([Option, Category, OptionValue, Product]),
 		CategoryModule,
 	],
 })

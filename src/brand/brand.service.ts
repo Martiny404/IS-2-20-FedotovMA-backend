@@ -29,12 +29,8 @@ export class BrandService {
 	async addCategories(id: number, categories: number[]) {
 		const brandCategories = await Promise.all(
 			categories.map(async id => {
-				try {
-					const category = await this.categoryService.byId(id);
-					return category;
-				} catch (e) {
-					throw e;
-				}
+				const category = await this.categoryService.byId(id);
+				return category;
 			})
 		);
 		const brand = await this.brandRepo.findOne({ where: { id } });

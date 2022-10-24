@@ -7,11 +7,9 @@ import { Product } from './product.entity';
 import { Brand } from 'src/brand/brand.entity';
 import { Rating } from './rating.entity';
 import { User } from 'src/user/user.entity';
-
 import { OptionModule } from 'src/option/option.module';
-import { ProductValues } from 'src/option/product-values.entity';
 import { ProductImages } from './product-imgs.entity';
-
+import { OptionValue } from 'src/option/option-value.entity';
 @Module({
 	providers: [ProductService],
 	controllers: [ProductController],
@@ -23,7 +21,7 @@ import { ProductImages } from './product-imgs.entity';
 			Rating,
 			ProductImages,
 			User,
-			ProductValues,
+			OptionValue,
 		]),
 		OptionModule,
 	],

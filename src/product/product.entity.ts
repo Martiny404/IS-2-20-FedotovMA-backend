@@ -1,7 +1,15 @@
 import { Brand } from 'src/brand/brand.entity';
 import { Category } from 'src/category/category.entity';
-import { ProductValues } from 'src/option/product-values.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { OptionValue } from 'src/option/option-value.entity';
+import {
+	Column,
+	Entity,
+	JoinColumn,
+	JoinTable,
+	ManyToMany,
+	ManyToOne,
+	OneToMany,
+} from 'typeorm';
 import { Base } from '../utils/base';
 import { ProductImages } from './product-imgs.entity';
 import { Rating } from './rating.entity';
@@ -55,6 +63,18 @@ export class Product extends Base {
 	@OneToMany(() => Rating, rating => rating.products)
 	rating: Rating[];
 
-	@OneToMany(() => ProductValues, productValues => productValues.product)
-	productValues: ProductValues[];
+	@ManyToMany(() => OptionValue, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
+	@JoinTable({
+		name: 'product_values',
+		joinColumn: {
+			name: 'product_id',
+		},
+		inverseJoinColumn: {
+			name: 'value_id',
+		},
+	})
+	productValues: OptionValue[];
 }

@@ -22,6 +22,10 @@ export class Option {
 	})
 	categories: Category[];
 
-	@OneToMany(() => OptionValue, optionValue => optionValue.option)
+	@OneToMany(() => OptionValue, optionValue => optionValue.option, {
+		cascade: true,
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE',
+	})
 	values: OptionValue[];
 }

@@ -1,7 +1,6 @@
 import {
 	BadRequestException,
 	Injectable,
-	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -61,60 +60,46 @@ export class AuthService {
 		}
 	}
 	async login(email: string, password: string) {
-		try {
-			const user = await this.userRepo.findOne({
-				where: { email },
-				relations: {
-					role: true,
-				},
-			});
+		const user = await this.userRepo.findOne({
+			where: { email },
+			relations: {
+				role: true,
+			},
+		});
 
-			if (!user) {
-				throw new BadRequestException('Пользователь не найден');
-			}
-			const isPasswodCorrect = await compare(password, user.password);
-
-			if (!isPasswodCorrect) {
-				throw new BadRequestException('Неверный логин или пароль');
-			}
-			const userData = makeUserData(user, user.role.roleName);
-			const tokens = await this.generateTokens(userData);
-
-			if (tokens) await this.saveRefreshToken(userData.id, tokens.refreshToken);
-			return {
-				...tokens,
-				user: userData,
-			};
-		} catch (e) {
-			throw e;
+		if (!user) {
+			throw new BadRequestException('Пользователь не найден');
 		}
+		const isPasswodCorrect = await compare(password, user.password);
+
+		if (!isPasswodCorrect) {
+			throw new BadRequestException('Неверный логин или пароль');
+		}
+		const userData = makeUserData(user, user.role.roleName);
+		const tokens = await this.generateTokens(userData);
+
+		if (tokens) await this.saveRefreshToken(userData.id, tokens.refreshToken);
+		return {
+			...tokens,
+			user: userData,
+		};
 	}
 	async activate(activationLink: string) {
-		try {
-			const user = await this.userRepo.findOne({
-				where: { activation_link: activationLink },
-			});
-			if (!user) {
-				throw new BadRequestException('Пользователь не найден');
-			}
-			user.isActivated = true;
-			await this.userRepo.save(user);
-		} catch (e) {
-			throw e;
+		const user = await this.userRepo.findOne({
+			where: { activation_link: activationLink },
+		});
+		if (!user) {
+			throw new BadRequestException('Пользователь не найден');
 		}
+		user.isActivated = true;
+		await this.userRepo.save(user);
 	}
 
 	async logout(refreshToken: string) {
-		try {
-			await this.removeToken(refreshToken);
-			return {
-				message: 'Вы успешно вышли из системы!',
-			};
-		} catch (e) {
-			throw new InternalServerErrorException(
-				'Непредвиденная ошибка при выходе из системы'
-			);
-		}
+		await this.removeToken(refreshToken);
+		return {
+			message: 'Вы успешно вышли из системы!',
+		};
 	}
 
 	async refresh(token: string) {
@@ -135,7 +120,6 @@ export class AuthService {
 					role: true,
 				},
 			});
-
 			const freshUserData = makeUserData(user, user.role.roleName);
 
 			const tokens = await this.generateTokens(freshUserData);
@@ -147,76 +131,62 @@ export class AuthService {
 				user: freshUserData,
 			};
 		} catch (e) {
-			throw e;
+			throw new UnauthorizedException(e.message);
 		}
 	}
 
 	async generateTokens(payload: AuthUser) {
-		try {
-			const accessToken = await this.jwtService.signAsync(
-				{ ...payload },
-				{
-					expiresIn: '1m',
-					secret: process.env.JWT_SECRET,
-				}
-			);
-			const refreshToken = await this.jwtService.signAsync(
-				{ ...payload },
-				{
-					expiresIn: '10m',
-					secret: process.env.JWT_SECRET_REFRESH,
-				}
-			);
-			return {
-				accessToken,
-				refreshToken,
-			};
-		} catch (e) {
-			throw new InternalServerErrorException(
-				'Ошибка при генерации токена: ' + e.message
-			);
-		}
+		const accessToken = await this.jwtService.signAsync(
+			{ ...payload },
+			{
+				expiresIn: '30s',
+				secret: process.env.JWT_SECRET,
+			}
+		);
+		const refreshToken = await this.jwtService.signAsync(
+			{ ...payload },
+			{
+				expiresIn: '1m',
+				secret: process.env.JWT_SECRET_REFRESH,
+			}
+		);
+		return {
+			accessToken,
+			refreshToken,
+		};
 	}
 
 	async saveRefreshToken(userId: number, refreshToken: string) {
-		try {
-			const tokenData = await this.tokenRepo.findOneBy({
-				user: { id: userId },
-			});
-			if (tokenData) {
-				tokenData.refreshToken = refreshToken;
-				return this.tokenRepo.save(tokenData);
-			}
-
-			const data = {
-				refreshToken,
-				user: { id: userId },
-			};
-
-			const token = this.tokenRepo.create(data);
-
-			await this.tokenRepo.save(token);
-		} catch (e) {
-			throw new InternalServerErrorException(
-				'Ошибка при сохранении токена: ' + e.message
-			);
+		const tokenData = await this.tokenRepo.findOneBy({
+			user: { id: userId },
+		});
+		if (tokenData) {
+			tokenData.refreshToken = refreshToken;
+			return this.tokenRepo.save(tokenData);
 		}
+
+		const data = {
+			refreshToken,
+			user: { id: userId },
+		};
+
+		const token = this.tokenRepo.create(data);
+
+		await this.tokenRepo.save(token);
 	}
 
 	async removeToken(token: string) {
-		try {
-			await this.tokenRepo.delete({ refreshToken: token });
-		} catch (e) {
-			throw new InternalServerErrorException(
-				'Ошибка при удалении токена: ' + e.message
-			);
-		}
+		await this.tokenRepo.delete({ refreshToken: token });
 	}
 
 	async findToken(token: string) {
 		const data = await this.tokenRepo.findOne({
 			where: { refreshToken: token },
 		});
-		return data;
+		if (data) {
+			return data;
+		} else {
+			throw new BadRequestException('Токен не найден');
+		}
 	}
 }

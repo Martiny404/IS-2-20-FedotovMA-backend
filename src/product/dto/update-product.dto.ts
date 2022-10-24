@@ -15,5 +15,5 @@ export class updateProductDto {
 
 	brandId?: number;
 
-	productValues?: number[];
+	valuesIds?: number[];
 }

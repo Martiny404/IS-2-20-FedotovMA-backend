@@ -1,11 +1,8 @@
-import {
-	BadRequestException,
-	Injectable,
-	InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { OptionValue } from 'src/option/option-value.entity';
 import { OptionService } from 'src/option/option.service';
-import { ProductValues } from 'src/option/product-values.entity';
+
 import { createShortInfo } from 'src/utils/createShortInfo';
 import { Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
@@ -19,8 +16,8 @@ export class ProductService {
 		@InjectRepository(Product)
 		private readonly productRepo: Repository<Product>,
 		private readonly optionService: OptionService,
-		@InjectRepository(ProductValues)
-		readonly productValuesRepo: Repository<ProductValues>
+		@InjectRepository(OptionValue)
+		readonly productValuesRepo: Repository<OptionValue>
 	) {}
 
 	async create(dto: CreateProductDto) {
@@ -51,19 +48,7 @@ export class ProductService {
 
 		const currentValues = await this.optionService.getByIds(dto.valuesIds);
 
-		await Promise.all(
-			dto.valuesIds.map(async v => {
-				try {
-					const prodValue = this.productValuesRepo.create({
-						product: { id },
-						productValue: { id: v },
-					});
-					return await this.productValuesRepo.save(prodValue);
-				} catch (e) {
-					throw new InternalServerErrorException('ошибка сервера');
-				}
-			})
-		);
+		product.productValues = currentValues;
 
 		const shortInfo = createShortInfo(currentValues);
 
@@ -76,17 +61,13 @@ export class ProductService {
 			select: {
 				category: { id: true, name: true },
 				brand: { id: true, name: true },
-				productValues: { id: true, productValue: { value: true } },
+				productValues: { value: true, option: { optionName: true } },
 			},
 			where: { hidden: false },
 			relations: {
 				category: true,
 				brand: true,
-				productValues: {
-					productValue: {
-						option: true,
-					},
-				},
+				productValues: { option: true },
 			},
 		});
 
@@ -116,32 +97,12 @@ export class ProductService {
 		if (dto.categoryId) product.category.id = dto.categoryId;
 		if (dto.brandId) product.brand.id = dto.brandId;
 		if (dto.price) product.price = dto.price;
-		if (dto.productValues) {
-			await Promise.all(
-				dto.productValues.map(async v => {
-					try {
-						const prodValue = this.productValuesRepo.create({
-							product: { id },
-							productValue: { id: v },
-						});
-						return await this.productValuesRepo.save(prodValue);
-					} catch (e) {
-						throw new InternalServerErrorException('ошибка сервера');
-					}
-				})
-			);
+		if (dto.valuesIds) {
+			const currentValues = await this.optionService.getByIds(dto.valuesIds);
+			const shortInfo = createShortInfo(currentValues);
+			product.shortInfo = shortInfo;
+			product.productValues = currentValues;
 		}
 		return await this.productRepo.save(product);
 	}
 }
-
-// const result = this.productRepo
-// 	.createQueryBuilder('product')
-// 	.innerJoinAndSelect('product.brand', 'brand')
-// 	.innerJoinAndSelect('product.category', 'category')
-// 	.innerJoinAndSelect('product.productValues', 'productValues')
-// 	.innerJoinAndSelect('productValues.productValue', 'value')
-// 	.innerJoinAndSelect('value.option', 'option')
-// 	.andWhere('product.hidden = false');
-
-// const products = await result.getMany();
