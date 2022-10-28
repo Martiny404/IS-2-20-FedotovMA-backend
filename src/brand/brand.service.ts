@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryService } from 'src/category/category.service';
 import { Repository } from 'typeorm';
@@ -26,20 +30,20 @@ export class BrandService {
 		return await this.brandRepo.save(brand);
 	}
 
-	async addCategories(id: number, categories: number[]) {
-		const brandCategories = await Promise.all(
-			categories.map(async id => {
-				const category = await this.categoryService.byId(id);
-				return category;
-			})
-		);
-		const brand = await this.brandRepo.findOne({ where: { id } });
+	async addCategory(id: number, categoryId: number) {
+		const brand = await this.brandRepo.findOne({
+			where: { id },
+			relations: { categories: true },
+		});
 
-		if (!brand) throw new BadRequestException('Такого бренда нету!');
+		if (!brand) throw new NotFoundException('Такого бренда нету!');
 
-		const withoutNull = brandCategories.filter(c => c !== null);
+		const category = await this.categoryService.byId(categoryId);
 
-		brand.categories = withoutNull;
+		if (brand.categories.some(cat => cat.id === categoryId))
+			throw new BadRequestException('У бренда уже есть такая категория!');
+
+		brand.categories = [...brand.categories, category];
 
 		return await this.brandRepo.save(brand);
 	}

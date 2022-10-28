@@ -1,12 +1,13 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { get } from 'http';
 import { CategoryService } from './category.service';
+import { AddOptionDto } from './dto/add-option.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Controller('category')
 export class CategoryController {
 	constructor(private readonly categoryService: CategoryService) {}
-	@Post('/')
+
+	@Post()
 	async create(@Body() dto: CreateCategoryDto) {
 		const category = await this.categoryService.create(dto);
 		return category;
@@ -15,6 +16,11 @@ export class CategoryController {
 	@Get('/all-options')
 	async getAllOptions() {
 		return this.categoryService.getAllOptions();
+	}
+
+	@Post('/add-options')
+	async addOption(@Body() dto: AddOptionDto) {
+		return this.categoryService.addOption(dto.categoryId, dto.optionId);
 	}
 
 	@Get('/:name')

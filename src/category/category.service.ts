@@ -1,5 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { OptionService } from 'src/option/option.service';
 import { Repository } from 'typeorm';
 import { Category } from './category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -8,12 +13,11 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 export class CategoryService {
 	constructor(
 		@InjectRepository(Category)
-		private readonly categoryRepo: Repository<Category>
+		private readonly categoryRepo: Repository<Category>,
+		private readonly optionService: OptionService
 	) {}
 	async create({ name }: CreateCategoryDto) {
-		const isCategoryExist = await this.categoryRepo.findOne({
-			where: { name },
-		});
+		const isCategoryExist = await this.byName(name);
 
 		if (isCategoryExist) {
 			throw new BadRequestException('Категория с таким именем уже существует!');
@@ -30,16 +34,30 @@ export class CategoryService {
 			where: { name: categoryName },
 			relations: { options: true },
 		});
-		if (!category) {
-			throw new BadRequestException('Категории не существует!');
-		}
 		return category;
 	}
 	async byId(id: number) {
-		return await this.categoryRepo.findOne({ where: { id } });
+		const category = await this.categoryRepo.findOne({
+			where: { id },
+			relations: ['options'],
+		});
+		if (!category) {
+			throw new NotFoundException('Категории не существует!');
+		}
+		return category;
+	}
+
+	async addOption(categoryId: number, optionId: number) {
+		const option = await this.optionService.byId(optionId);
+
+		const category = await this.byId(categoryId);
+
+		category.options = [...category.options, option];
+
+		return this.categoryRepo.save(category);
 	}
 
 	async getAllOptions() {
-		return await this.categoryRepo.find({ relations: { options: true } });
+		return await this.categoryRepo.find({ relations: ['options'] });
 	}
 }

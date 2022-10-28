@@ -8,7 +8,7 @@ import { UserService } from './user.service';
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	@CheckRole('user')
+	@CheckRole('admin')
 	@Get('/')
 	async getAll() {
 		return this.userService.getAll();

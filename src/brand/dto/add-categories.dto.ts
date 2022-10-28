@@ -1,4 +1,4 @@
-export class AddCategoriesDto {
+export class AddCategoryDto {
 	brandId: number;
-	categories: number[];
+	categoryId: number;
 }

@@ -4,7 +4,7 @@ import { OptionValue } from 'src/option/option-value.entity';
 import { OptionService } from 'src/option/option.service';
 
 import { createShortInfo } from 'src/utils/createShortInfo';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
@@ -36,11 +36,16 @@ export class ProductService {
 			category: { id: dto.categoryId },
 		});
 
-		return await this.productRepo.save(newProduct);
+		try {
+			return await this.productRepo.save(newProduct);
+		} catch (e) {
+			throw new BadRequestException(e.message);
+		}
 	}
 	async addOptions(id: number, dto: addOptionsToProductDto) {
 		const product = await this.productRepo.findOne({
 			where: { id },
+			relations: { productValues: true },
 		});
 		if (!product) {
 			throw new BadRequestException('Продукта не существует!');
@@ -48,11 +53,13 @@ export class ProductService {
 
 		const currentValues = await this.optionService.getByIds(dto.valuesIds);
 
-		product.productValues = currentValues;
+		product.productValues = [...product.productValues, ...currentValues];
 
 		const shortInfo = createShortInfo(currentValues);
 
-		product.shortInfo = shortInfo;
+		product.shortInfo = product.shortInfo
+			? product.shortInfo + shortInfo
+			: shortInfo;
 		await this.productRepo.save(product);
 		return product;
 	}
@@ -61,16 +68,15 @@ export class ProductService {
 			select: {
 				category: { id: true, name: true },
 				brand: { id: true, name: true },
-				productValues: { value: true, option: { optionName: true } },
+				productValues: { value: true, option: { optionName: true, id: true } },
 			},
-			where: { hidden: false },
+			//where:{productValues:{value:{id: In([123])}}},
 			relations: {
 				category: true,
 				brand: true,
 				productValues: { option: true },
 			},
 		});
-
 		return products;
 	}
 
@@ -97,12 +103,6 @@ export class ProductService {
 		if (dto.categoryId) product.category.id = dto.categoryId;
 		if (dto.brandId) product.brand.id = dto.brandId;
 		if (dto.price) product.price = dto.price;
-		if (dto.valuesIds) {
-			const currentValues = await this.optionService.getByIds(dto.valuesIds);
-			const shortInfo = createShortInfo(currentValues);
-			product.shortInfo = shortInfo;
-			product.productValues = currentValues;
-		}
 		return await this.productRepo.save(product);
 	}
 }

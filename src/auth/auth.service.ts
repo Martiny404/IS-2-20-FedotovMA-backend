@@ -1,6 +1,8 @@
 import {
 	BadRequestException,
 	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -48,7 +50,7 @@ export class AuthService {
 				email,
 				`${process.env.API_URL}/api/auth/activate/${activationLink}`
 			);
-			const userData = makeUserData(user, userRole.roleName);
+			const userData = makeUserData(user);
 			const tokens = await this.generateTokens(userData);
 			if (tokens) await this.saveRefreshToken(userData.id, tokens.refreshToken);
 			return {
@@ -68,14 +70,14 @@ export class AuthService {
 		});
 
 		if (!user) {
-			throw new BadRequestException('Пользователь не найден');
+			throw new NotFoundException('Пользователь не найден');
 		}
 		const isPasswodCorrect = await compare(password, user.password);
 
 		if (!isPasswodCorrect) {
 			throw new BadRequestException('Неверный логин или пароль');
 		}
-		const userData = makeUserData(user, user.role.roleName);
+		const userData = makeUserData(user);
 		const tokens = await this.generateTokens(userData);
 
 		if (tokens) await this.saveRefreshToken(userData.id, tokens.refreshToken);
@@ -89,7 +91,7 @@ export class AuthService {
 			where: { activation_link: activationLink },
 		});
 		if (!user) {
-			throw new BadRequestException('Пользователь не найден');
+			throw new NotFoundException('Пользователь не найден');
 		}
 		user.isActivated = true;
 		await this.userRepo.save(user);
@@ -120,7 +122,7 @@ export class AuthService {
 					role: true,
 				},
 			});
-			const freshUserData = makeUserData(user, user.role.roleName);
+			const freshUserData = makeUserData(user);
 
 			const tokens = await this.generateTokens(freshUserData);
 
