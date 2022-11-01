@@ -1,9 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OptionValue } from 'src/option/option-value.entity';
 import { OptionService } from 'src/option/option.service';
-
-import { createShortInfo } from 'src/utils/createShortInfo';
 import { In, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -15,9 +12,7 @@ export class ProductService {
 	constructor(
 		@InjectRepository(Product)
 		private readonly productRepo: Repository<Product>,
-		private readonly optionService: OptionService,
-		@InjectRepository(OptionValue)
-		readonly productValuesRepo: Repository<OptionValue>
+		private readonly optionService: OptionService
 	) {}
 
 	async create(dto: CreateProductDto) {
@@ -55,29 +50,24 @@ export class ProductService {
 
 		product.productValues = [...product.productValues, ...currentValues];
 
-		const shortInfo = createShortInfo(currentValues);
-
-		product.shortInfo = product.shortInfo
-			? product.shortInfo + shortInfo
-			: shortInfo;
 		await this.productRepo.save(product);
 		return product;
 	}
 	async all() {
-		const products = await this.productRepo.find({
+		const p = await this.productRepo.find({
 			select: {
 				category: { id: true, name: true },
 				brand: { id: true, name: true },
-				productValues: { value: true, option: { optionName: true, id: true } },
+				productValues: true,
 			},
-			//where:{productValues:{value:{id: In([123])}}},
 			relations: {
 				category: true,
 				brand: true,
 				productValues: { option: true },
 			},
 		});
-		return products;
+
+		return p;
 	}
 
 	async toggleHidden(id: number) {
