@@ -1,7 +1,18 @@
-import { Body, Controller, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Param,
+	Patch,
+	Post,
+	Res,
+	Req,
+} from '@nestjs/common';
 import { Response } from 'express';
+import { CheckAuth } from 'src/decorators/auth.decorator';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import { RateProductDto } from './dto/rate-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
 import { ProductService } from './product.service';
 
@@ -30,6 +41,18 @@ export class ProductController {
 	async toggleHidden(@Param('id') id: string, @Res() res: Response) {
 		const prod = await this.productService.toggleHidden(+id);
 		res.status(200).json(prod);
+	}
+
+	@CheckAuth('user', true)
+	@Post('/rate-product')
+	async evaluteProduct(@Body() dto: RateProductDto, @Req() req) {
+		const userId = req.user.id;
+		return this.productService.evaluteProduct(userId, dto.productId, dto.rate);
+	}
+
+	@Get('/rate-product/:id')
+	async getAverageRate(@Param('id') id: string) {
+		return this.productService.getAverageRate(+id);
 	}
 
 	@Patch('/update/:id')

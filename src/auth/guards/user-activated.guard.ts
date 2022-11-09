@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
-export class AdminGuard implements CanActivate {
+export class isActivatedGuard implements CanActivate {
 	constructor() {}
 
 	canActivate(
@@ -17,8 +17,8 @@ export class AdminGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest<{ user: User }>();
 		const user = request.user;
 
-		if (user.role.roleName !== 'admin') {
-			throw new ForbiddenException('У вас нету прав!');
+		if (!user.isActivated) {
+			throw new ForbiddenException('Неактивирован!');
 		}
 		return true;
 	}

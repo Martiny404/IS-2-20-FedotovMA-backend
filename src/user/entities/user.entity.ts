@@ -1,7 +1,9 @@
-import { Rating } from 'src/product/rating.entity';
+import { Rating } from 'src/product/entities/rating.entity';
 import { Role } from 'src/role/role.entity';
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { Base } from '../utils/base';
+import { Base } from '../../utils/base';
+import { Basket } from './basket.entity';
+import { Wishlist } from './wishlist.entity';
 
 @Entity()
 export class User extends Base {
@@ -20,6 +22,12 @@ export class User extends Base {
 	@JoinColumn({ name: 'role_id' })
 	role: Role;
 
-	@OneToMany(() => Rating, rating => rating.users)
-	rate: Rating;
+	@OneToMany(() => Rating, rating => rating.user)
+	rate: Rating[];
+
+	@OneToMany(() => Wishlist, wish => wish.user)
+	wishes: Wishlist[];
+
+	@OneToMany(() => Basket, basket => basket.user)
+	basket: Basket[];
 }

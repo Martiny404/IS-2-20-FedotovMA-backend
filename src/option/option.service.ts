@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OptionValue } from './option-value.entity';
+import { OptionValue } from './entities/option-value.entity';
 import { Repository } from 'typeorm';
-import { Option } from './option.entity';
+import { Option } from './entities/option.entity';
 import { CreateOptionDto } from './dto/createOptionDto';
 
 @Injectable()

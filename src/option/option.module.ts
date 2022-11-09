@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { OptionService } from './option.service';
 import { OptionController } from './option.controller';
-import { Option } from './option.entity';
+import { Option } from './entities/option.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category } from 'src/category/category.entity';
-import { OptionValue } from './option-value.entity';
-import { Product } from 'src/product/product.entity';
+import { OptionValue } from './entities/option-value.entity';
+import { Product } from 'src/product/entities/product.entity';
 
 @Module({
 	providers: [OptionService],

@@ -1,6 +1,6 @@
 import { Brand } from 'src/brand/brand.entity';
-import { Option } from 'src/option/option.entity';
-import { Product } from 'src/product/product.entity';
+import { Option } from 'src/option/entities/option.entity';
+import { Product } from 'src/product/entities/product.entity';
 import {
 	Column,
 	Entity,

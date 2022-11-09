@@ -1,7 +1,6 @@
 import {
 	BadRequestException,
 	Injectable,
-	InternalServerErrorException,
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
@@ -11,7 +10,8 @@ import { compare, hash } from 'bcryptjs';
 import { MailService } from 'src/mail/mail.service';
 import { RoleService } from 'src/role/role.service';
 import { AuthUser } from 'src/types/user-auth.inteface';
-import { User } from 'src/user/user.entity';
+
+import { User } from 'src/user/entities/user.entity';
 import { makeUserData } from 'src/utils/makeUserData';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
@@ -22,6 +22,7 @@ export class AuthService {
 	constructor(
 		@InjectRepository(User) private readonly userRepo: Repository<User>,
 		@InjectRepository(Token) private readonly tokenRepo: Repository<Token>,
+
 		private readonly mailService: MailService,
 		private readonly roleService: RoleService,
 		private readonly jwtService: JwtService
@@ -46,6 +47,7 @@ export class AuthService {
 				role: { id: userRole.id },
 			});
 			await this.userRepo.save(user);
+
 			await this.mailService.sendActivationMail(
 				email,
 				`${process.env.API_URL}/api/auth/activate/${activationLink}`

@@ -2,29 +2,21 @@ import { Module } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Category } from 'src/category/category.entity';
-import { Product } from './product.entity';
-import { Brand } from 'src/brand/brand.entity';
-import { Rating } from './rating.entity';
-import { User } from 'src/user/user.entity';
+import { Product } from './entities/product.entity';
+import { Rating } from './entities/rating.entity';
 import { OptionModule } from 'src/option/option.module';
-import { ProductImages } from './product-imgs.entity';
-import { OptionValue } from 'src/option/option-value.entity';
+import { ProductImages } from './entities/product-imgs.entity';
+import { OptionValue } from 'src/option/entities/option-value.entity';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
 	providers: [ProductService],
 	controllers: [ProductController],
 	imports: [
-		TypeOrmModule.forFeature([
-			Product,
-			Category,
-			Brand,
-			Rating,
-			ProductImages,
-			User,
-			OptionValue,
-		]),
+		TypeOrmModule.forFeature([Product, Rating, ProductImages, OptionValue]),
+		UserModule,
 		OptionModule,
 	],
+	exports: [],
 })
 export class ProductModule {}

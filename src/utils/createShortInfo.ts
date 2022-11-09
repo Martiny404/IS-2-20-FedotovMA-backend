@@ -1,4 +1,4 @@
-import { OptionValue } from 'src/option/option-value.entity';
+import { OptionValue } from 'src/option/entities/option-value.entity';
 
 export function createShortInfo(values: OptionValue[]): string | null {
 	if (values.length < 0) return null;

@@ -1,5 +1,5 @@
 import { Category } from 'src/category/category.entity';
-import { Product } from 'src/product/product.entity';
+import { Product } from 'src/product/entities/product.entity';
 import {
 	Column,
 	Entity,

@@ -1,5 +1,5 @@
 import { AuthUser } from 'src/types/user-auth.inteface';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 export function makeUserData(user: User): AuthUser {
 	return {
