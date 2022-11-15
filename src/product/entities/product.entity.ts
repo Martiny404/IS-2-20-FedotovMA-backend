@@ -15,11 +15,12 @@ import {
 	OneToMany,
 } from 'typeorm';
 import { Basket } from 'src/user/entities/basket.entity';
+import { OrderProduct } from 'src/order/entities/order-product.entity';
 
 export enum ProductStatus {
-	PREPARING_FOR_SALE = 'preparing for sale',
-	ON_SALE = 'on sale',
-	NOT_AVAILABLE_FOR_FALSE = 'not available for sale',
+	PREPARING_FOR_SALE = 'PREPARING_FOR_SALE',
+	ON_SALE = 'ON_SALE',
+	NOT_AVAILABLE_FOR_FALSE = 'NOT_AVAILABLE_FOR_FALSE',
 }
 
 @Entity()
@@ -68,6 +69,9 @@ export class Product extends Base {
 	@OneToMany(() => Basket, basket => basket.product)
 	baskets: Basket[];
 
+	@OneToMany(() => OrderProduct, op => op.product)
+	productOrders: OrderProduct[];
+
 	@ManyToMany(() => OptionValue, {
 		onDelete: 'CASCADE',
 		onUpdate: 'CASCADE',
@@ -82,6 +86,9 @@ export class Product extends Base {
 		},
 	})
 	productValues: OptionValue[];
+
+	@Column({ type: 'jsonb', default: {} })
+	options: Record<string, unknown>;
 }
 
 // import { ViewColumn, ViewEntity } from "typeorm";

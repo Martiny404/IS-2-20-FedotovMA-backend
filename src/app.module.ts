@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfig } from './config/typeorm.config';
 import { UserModule } from './user/user.module';
@@ -14,19 +14,20 @@ import { BrandModule } from './brand/brand.module';
 
 import { OptionModule } from './option/option.module';
 import { FileModule } from './file/file.module';
+import { OrderModule } from './order/order.module';
+import { TokenModule } from './token/token.module';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			envFilePath: `.${process.env.NODE_ENV}.env`,
+			isGlobal: true,
 		}),
 		TypeOrmModule.forRootAsync({
-			imports: [],
-			inject: [],
+			inject: [ConfigService],
 			useFactory: TypeOrmConfig,
 		}),
 		UserModule,
-
 		MailModule,
 		AuthModule,
 		RoleModule,
@@ -35,6 +36,8 @@ import { FileModule } from './file/file.module';
 		BrandModule,
 		OptionModule,
 		FileModule,
+		OrderModule,
+		TokenModule,
 	],
 	controllers: [],
 	providers: [],

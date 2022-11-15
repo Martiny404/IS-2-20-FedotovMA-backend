@@ -1,3 +1,4 @@
+import { Order } from 'src/order/entities/order.entity';
 import { Rating } from 'src/product/entities/rating.entity';
 import { Role } from 'src/role/role.entity';
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
@@ -24,6 +25,9 @@ export class User extends Base {
 
 	@OneToMany(() => Rating, rating => rating.user)
 	rate: Rating[];
+
+	@OneToMany(() => Order, order => order.user)
+	orders: Order[];
 
 	@OneToMany(() => Wishlist, wish => wish.user)
 	wishes: Wishlist[];

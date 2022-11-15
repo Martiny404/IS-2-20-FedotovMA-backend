@@ -1,7 +1,12 @@
-import { IsArray, IsNumber } from 'class-validator';
+// import { IsArray, IsNumber } from 'class-validator';
+
+// export class addOptionsToProductDto {
+// 	@IsArray()
+// 	@IsNumber({}, { each: true })
+// 	valuesIds: number[];
+// }
 
 export class addOptionsToProductDto {
-	@IsArray()
-	@IsNumber({}, { each: true })
-	valuesIds: number[];
+	optionId: number;
+	optionValueId: number;
 }

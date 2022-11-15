@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { OptionService } from 'src/option/option.service';
 import { UserService } from 'src/user/user.service';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
@@ -48,48 +48,72 @@ export class ProductService {
 	async addOptions(id: number, dto: addOptionsToProductDto) {
 		const product = await this.productRepo.findOne({
 			where: { id },
-			relations: { productValues: true },
 		});
 		if (!product) {
-			throw new BadRequestException('Продукта не существует!');
+			throw new NotFoundException('Продукт не найден!');
 		}
 
-		const currentValues = await this.optionService.getByIds(dto.valuesIds);
+		const option = await this.optionService.byId(dto.optionId);
+		const value = option.values.find(el => el.id == dto.optionValueId);
 
-		product.productValues = [...product.productValues, ...currentValues];
+		if (!value) {
+			throw new BadRequestException('Значения не существует!');
+		}
+
+		product.options = { ...product.options, [option.optionName]: value.value };
 
 		await this.productRepo.save(product);
 		return product;
 	}
+
+	async deleteOptions(id: number, keys: string[]) {
+		const product = await this.byId(id);
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		for (const key of keys) {
+			if ((product.options as Object).hasOwnProperty(key)) {
+				delete product.options[key];
+			}
+		}
+		return this.productRepo.save(product);
+	}
+
 	async byId(id: number) {
 		const product = await this.productRepo.findOne({ where: { id } });
 
 		return product;
 	}
 	async all() {
-		// const p = await this.productRepo.find({
-		// 	select: {
-		// 		category: { id: true, name: true },
-		// 		brand: { id: true, name: true },
-		// 		productValues: true,
-		// 	},
-		// 	relations: {
-		// 		category: true,
-		// 		brand: true,
-		// 		productValues: { option: true },
-		// 	},
-		// 	where: [{ productValues: { id: 2 } }, { productValues: { id: 4 } }],
-		// });
+		let page = 1;
+		let limit = 9;
+		let offset = page * limit - limit;
 
-		// return p;
+		const filters = [
+			{ key: 'ram', value: '8gb' },
+			{ key: 'hdd', value: ['256gb', '512gb'] },
+		];
 
-		const r = this.productRepo
-			.createQueryBuilder('product')
-			.innerJoinAndSelect('product.productValues', 'pv');
-		// .where('pv.id = :id', { id: 2 })
-		// .andWhere('pv.id = :id', { id: 4 });
+		const category = 'Ноутбук';
 
-		return await r.getMany();
+		const p = this.productRepo
+			.createQueryBuilder('p')
+			.innerJoinAndSelect('p.category', 'c')
+			.innerJoinAndSelect('p.brand', 'b')
+			.where('c.name = :name', { name: category });
+		for (const filter of filters) {
+			if (Array.isArray(filter.value)) {
+				const values = filter.value.map(v => `'${v}'`).join();
+				p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
+			} else {
+				p.andWhere(`p.options @> '{"${filter.key}": "${filter.value}"}'`);
+			}
+		}
+		const response = await p.getManyAndCount();
+		return {
+			count: response[1],
+			products: response[0],
+		};
 	}
 
 	async toggleHidden(id: number) {
@@ -158,3 +182,5 @@ export class ProductService {
 		};
 	}
 }
+
+//(foo ->> 'a')::boolean is true;

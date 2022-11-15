@@ -7,6 +7,8 @@ import {
 	Post,
 	Res,
 	Req,
+	Delete,
+	Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CheckAuth } from 'src/decorators/auth.decorator';
@@ -41,6 +43,11 @@ export class ProductController {
 	async toggleHidden(@Param('id') id: string, @Res() res: Response) {
 		const prod = await this.productService.toggleHidden(+id);
 		res.status(200).json(prod);
+	}
+
+	@Delete('/delete-options/:id')
+	async deleteOptions(@Param('id') id: string, @Body('keys') keys: string[]) {
+		return this.productService.deleteOptions(+id, keys);
 	}
 
 	@CheckAuth('user', true)
