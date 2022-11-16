@@ -3,7 +3,7 @@ import { Base } from 'src/utils/base';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { OrderProduct } from './order-product.entity';
 
-enum OrderStatus {
+export enum OrderStatus {
 	COMPLETED = 'completed',
 	CANCELLED = 'CANCELLED',
 	ON_THE_WAY = 'ON_THE_WAY',
@@ -31,6 +31,6 @@ export class Order extends Base {
 	})
 	orderStatus: OrderStatus;
 
-	@Column({ type: 'int', width: 6 })
-	activation_code: number;
+	@Column({ type: 'varchar', length: 6 })
+	activation_code: string;
 }

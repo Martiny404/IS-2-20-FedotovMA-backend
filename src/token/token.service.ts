@@ -22,7 +22,12 @@ export class TokenService {
 	) {}
 
 	async generateTokens(payload: AuthUser) {
-		const accessToken = await this.jwtService.signAsync({ ...payload });
+		const accessToken = await this.jwtService.signAsync(
+			{ ...payload },
+			{
+				expiresIn: '30m',
+			}
+		);
 		const refreshToken = await this.jwtService.signAsync(
 			{ ...payload },
 			{
@@ -56,10 +61,14 @@ export class TokenService {
 	}
 
 	async verifyRefreshToken(token: string) {
-		const data = await this.jwtService.verifyAsync<AuthUser>(token, {
-			secret: this.configService.get('JWT_SECRET_REFRESH'),
-		});
-		return data;
+		try {
+			const data = await this.jwtService.verifyAsync<AuthUser>(token, {
+				secret: this.configService.get('JWT_SECRET_REFRESH'),
+			});
+			return data;
+		} catch (e) {
+			throw new UnauthorizedException('Не авторизован!');
+		}
 	}
 
 	async removeToken(token: string) {

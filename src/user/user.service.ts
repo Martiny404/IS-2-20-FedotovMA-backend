@@ -9,6 +9,7 @@ import { User } from './entities/user.entity';
 import { Wishlist } from './entities/wishlist.entity';
 import { Repository } from 'typeorm';
 import { Basket } from './entities/basket.entity';
+import { CheckAuth } from 'src/decorators/auth.decorator';
 
 @Injectable()
 export class UserService {
@@ -18,6 +19,7 @@ export class UserService {
 		@InjectRepository(Basket) private readonly basketRepo: Repository<Basket>
 	) {}
 
+	@CheckAuth('user')
 	async getAll() {
 		try {
 			const users = await this.userRepo.find();
