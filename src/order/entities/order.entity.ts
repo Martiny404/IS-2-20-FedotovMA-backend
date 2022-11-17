@@ -13,8 +13,8 @@ export enum OrderStatus {
 
 @Entity()
 export class Order extends Base {
-	// @Column({ type: 'varchar', length: 10 })
-	// orderDate: string;
+	@Column({ type: 'varchar' })
+	order_date: string;
 
 	@ManyToOne(() => User, user => user.orders)
 	@JoinColumn({ name: 'user_id' })
@@ -30,6 +30,9 @@ export class Order extends Base {
 		name: 'order_status',
 	})
 	orderStatus: OrderStatus;
+
+	@Column({ type: 'boolean', default: false })
+	is_activated: boolean;
 
 	@Column({ type: 'varchar', length: 6 })
 	activation_code: string;

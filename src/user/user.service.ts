@@ -10,6 +10,8 @@ import { Wishlist } from './entities/wishlist.entity';
 import { Repository } from 'typeorm';
 import { Basket } from './entities/basket.entity';
 import { CheckAuth } from 'src/decorators/auth.decorator';
+import { Product } from 'src/product/entities/product.entity';
+import { OrderProduct } from 'src/order/entities/order-product.entity';
 
 @Injectable()
 export class UserService {
@@ -100,6 +102,37 @@ export class UserService {
 			throw e;
 		}
 	}
+
+	async getBasketItem(userId: number, productId: number) {
+		const basketItem = await this.basketRepo.findOne({
+			where: {
+				user: { id: userId },
+				product: { id: productId },
+			},
+		});
+		if (!basketItem) {
+			throw new NotFoundException('Продукт в корзине не найден!');
+		}
+		return basketItem;
+	}
+
+	async removeSeveralProductsFromBasket(
+		userId: number,
+		orderProducts: OrderProduct[]
+	) {
+		try {
+			const basketItems = await Promise.all(
+				orderProducts.map(async op => {
+					const basketItem = await this.getBasketItem(userId, op.product.id);
+					return basketItem;
+				})
+			);
+			return this.basketRepo.remove(basketItems);
+		} catch (e) {
+			throw e;
+		}
+	}
+
 	async incrementBasketItemQuantity(userId: number, productId: number) {
 		try {
 			const basketItem = await this.basketRepo.findOne({

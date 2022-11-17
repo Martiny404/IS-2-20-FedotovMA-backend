@@ -40,7 +40,6 @@ export class UserController {
 	@CheckAuth('user', true)
 	@Post('/basket')
 	async addToBasket(@Body('productId') productId: number, @Req() req) {
-		console.log(req.user);
 		const userId = req.user.id;
 		return this.userService.addToBasket(userId, productId);
 	}

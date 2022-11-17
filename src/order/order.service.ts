@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from 'src/mail/mail.service';
+import { ProductService } from 'src/product/product.service';
 import { UserService } from 'src/user/user.service';
 
 import { generateOrderCode } from 'src/utils/generateOrderCode';
+import { parseOrderDate } from 'src/utils/parseOrderDate';
 import { Repository } from 'typeorm';
 import { OrderProductDto } from './dto/create-order.dto';
 import { OrderProduct } from './entities/order-product.entity';
@@ -20,12 +22,14 @@ export class OrderService {
 		@InjectRepository(OrderProduct)
 		private readonly orderProductRepo: Repository<OrderProduct>,
 		private readonly mailService: MailService,
-		private readonly userService: UserService
+		private readonly userService: UserService,
+		private readonly productService: ProductService
 	) {}
 
 	async createOrder(userId: number, orderProductsDto: OrderProductDto[]) {
 		try {
 			const code = generateOrderCode();
+			const order_date = parseOrderDate();
 			const user = await this.userService.byId(userId);
 			if (!user) {
 				throw new NotFoundException(
@@ -35,6 +39,7 @@ export class OrderService {
 			const order = this.orderRepo.create({
 				activation_code: code,
 				user: { id: user.id },
+				order_date,
 			});
 
 			await this.orderRepo.save(order);
@@ -62,6 +67,11 @@ export class OrderService {
 				order.id
 			);
 			await this.orderRepo.save(order);
+			await this.userService.removeSeveralProductsFromBasket(
+				user.id,
+				order.orderProducts
+			);
+			await this.productService.reduceSeveralQuantity(order.orderProducts);
 			return order;
 		} catch (e) {
 			throw e;
@@ -101,7 +111,18 @@ export class OrderService {
 				return false;
 			}
 			order.orderStatus = OrderStatus.WAITING_FOR_PAYMENT_OR_RECEIPT;
+			order.is_activated = true;
 			await this.orderRepo.save(order);
+			return true;
+		} catch (e) {
+			throw e;
+		}
+	}
+
+	async removeOrder(orderId: number) {
+		try {
+			const order = await this.getOrder(orderId);
+			await this.orderRepo.remove(order);
 			return true;
 		} catch (e) {
 			throw e;

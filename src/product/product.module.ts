@@ -17,6 +17,6 @@ import { UserModule } from 'src/user/user.module';
 		UserModule,
 		OptionModule,
 	],
-	exports: [],
+	exports: [ProductService],
 })
 export class ProductModule {}

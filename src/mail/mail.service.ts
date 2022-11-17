@@ -46,7 +46,7 @@ export class MailService {
 				to,
 				from: this.configService.get('MAIL_USER'),
 				subject:
-					'Активация аккаунта на сайте: ' +
+					'Код подтверждения заказа на сайте: ' +
 					this.configService.get('CLIENT_URL'),
 				text: '',
 				html: `

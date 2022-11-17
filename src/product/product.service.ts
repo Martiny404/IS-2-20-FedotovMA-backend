@@ -5,12 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OptionService } from 'src/option/option.service';
+import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
+import { Product, ProductStatus } from './entities/product.entity';
 import { Rating } from './entities/rating.entity';
 
 @Injectable()
@@ -77,6 +78,35 @@ export class ProductService {
 			}
 		}
 		return this.productRepo.save(product);
+	}
+
+	async reduceQuantity(id: number, q: number) {
+		const product = await this.byId(id);
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		console.log('--------');
+		if (product.inStock - q < 0) return;
+
+		if (product.inStock - q == 0) {
+			product.inStock -= q;
+			product.status = ProductStatus.NOT_AVAILABLE_FOR_FALSE;
+			return await this.productRepo.save(product);
+		}
+		product.inStock -= q;
+		return await this.productRepo.save(product);
+	}
+
+	async reduceSeveralQuantity(orderProducts: OrderProduct[]) {
+		try {
+			await Promise.all(
+				orderProducts.map(async op => {
+					return await this.reduceQuantity(op.product.id, op.quantity);
+				})
+			);
+		} catch (e) {
+			throw e;
+		}
 	}
 
 	async byId(id: number) {
@@ -182,5 +212,3 @@ export class ProductService {
 		};
 	}
 }
-
-//(foo ->> 'a')::boolean is true;
