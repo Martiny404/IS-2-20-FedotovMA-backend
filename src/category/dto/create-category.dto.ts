@@ -6,4 +6,7 @@ export class CreateCategoryDto {
 		message: 'Название категории должно быть от 2 до 20 символов',
 	})
 	name: string;
+
+	@IsString()
+	categoryImgPath: string;
 }

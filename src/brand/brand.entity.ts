@@ -18,6 +18,9 @@ export class Brand {
 	@Column({ type: 'varchar', nullable: true })
 	description: string;
 
+	@Column({ type: 'varchar', nullable: true, name: 'brand_img_path' })
+	brandImgPath: string;
+
 	@OneToMany(() => Product, product => product.brand)
 	products: Product[];
 

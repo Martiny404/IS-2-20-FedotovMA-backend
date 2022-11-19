@@ -9,19 +9,21 @@ import { User } from './entities/user.entity';
 import { Wishlist } from './entities/wishlist.entity';
 import { Repository } from 'typeorm';
 import { Basket } from './entities/basket.entity';
-import { CheckAuth } from 'src/decorators/auth.decorator';
-import { Product } from 'src/product/entities/product.entity';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
+import { updateUserInfoDto } from './dto/update-user-info.dto';
+import { generateCode } from 'src/utils/generateCode';
+import { MailService } from 'src/mail/mail.service';
+import { compare, hash } from 'bcryptjs';
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User) private readonly userRepo: Repository<User>,
 		@InjectRepository(Wishlist) private readonly wishRepo: Repository<Wishlist>,
-		@InjectRepository(Basket) private readonly basketRepo: Repository<Basket>
+		@InjectRepository(Basket) private readonly basketRepo: Repository<Basket>,
+		private readonly mailService: MailService
 	) {}
 
-	@CheckAuth('user')
 	async getAll() {
 		try {
 			const users = await this.userRepo.find();
@@ -35,6 +37,68 @@ export class UserService {
 	async byId(id: number) {
 		const user = await this.userRepo.findOne({ where: { id } });
 		return user;
+	}
+
+	async updateUserInfo(userId: number, dto: updateUserInfoDto) {
+		try {
+			if (!dto.email && !dto.password) {
+				return;
+			}
+			const user = await this.byId(userId);
+
+			if (!user) {
+				throw new NotFoundException('Пользователь не найден!');
+			}
+
+			const isCodeValid = await this.validateUpdateInfoCode(user.id, dto.code);
+
+			if (isCodeValid) {
+				if (dto.email) {
+					const isMailExist = await this.userRepo.findOne({
+						where: { email: dto.email },
+					});
+					if (isMailExist) {
+						throw new BadRequestException('Почта занята!');
+					}
+					user.email = dto.email;
+				}
+				if (dto.password) {
+					const isPasswordMatch = await compare(dto.password, user.password);
+					if (isPasswordMatch) {
+						throw new BadRequestException('Новый пароль совпадает со старым!');
+					}
+					const passwordHash = await hash(dto.password, 5);
+					user.password = passwordHash;
+				}
+				return this.userRepo.save(user);
+			}
+		} catch (e) {
+			throw e;
+		}
+	}
+
+	async addValidationCodeToUser(userId: number) {
+		const user = await this.byId(userId);
+		if (!user) {
+			throw new NotFoundException('Пользователь не найден!');
+		}
+		const code = generateCode();
+		user.updateInfoCode = code;
+		await this.userRepo.save(user);
+		await this.mailService.sendUpdatingUserInfoCode(user.email, code);
+		return true;
+	}
+
+	async validateUpdateInfoCode(userId: number, validateCode: string) {
+		const user = await this.userRepo.findOne({
+			where: { id: userId, updateInfoCode: validateCode },
+		});
+		if (!user) {
+			throw new BadRequestException('Неверный код!');
+		}
+		user.updateInfoCode = null;
+		await this.userRepo.save(user);
+		return true;
 	}
 
 	async toggleToWishlist(userId: number, productId: number) {

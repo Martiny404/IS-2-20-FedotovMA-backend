@@ -16,7 +16,7 @@ export class CategoryService {
 		private readonly categoryRepo: Repository<Category>,
 		private readonly optionService: OptionService
 	) {}
-	async create({ name }: CreateCategoryDto) {
+	async create({ name, categoryImgPath }: CreateCategoryDto) {
 		const isCategoryExist = await this.byName(name);
 
 		if (isCategoryExist) {
@@ -25,6 +25,7 @@ export class CategoryService {
 
 		const category = this.categoryRepo.create({
 			name,
+			categoryImgPath,
 		});
 		return await this.categoryRepo.save(category);
 	}

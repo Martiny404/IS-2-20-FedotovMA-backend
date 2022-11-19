@@ -19,6 +19,15 @@ export class User extends Base {
 	@Column({ type: 'varchar', name: 'activation_link', nullable: true })
 	activation_link: string;
 
+	@Column({
+		type: 'varchar',
+		length: 6,
+		name: 'update_info_code',
+		nullable: true,
+		default: null,
+	})
+	updateInfoCode: string;
+
 	@ManyToOne(() => Role, role => role.users)
 	@JoinColumn({ name: 'role_id' })
 	role: Role;

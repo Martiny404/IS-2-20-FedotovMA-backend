@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 
 import { CheckAuth } from 'src/decorators/auth.decorator';
+import { updateUserInfoDto } from './dto/update-user-info.dto';
 
 import { UserService } from './user.service';
 
@@ -21,6 +22,20 @@ export class UserController {
 	@Get('/')
 	async getAll() {
 		return this.userService.getAll();
+	}
+
+	@CheckAuth('user', true)
+	@Get('/get-validation-code')
+	async getValidationCode(@Req() req) {
+		const userId = req.user.id;
+		return this.userService.addValidationCodeToUser(userId);
+	}
+
+	@CheckAuth('user', true)
+	@Patch('/update-user-info')
+	async updateUserInfo(@Req() req, @Body() dto: updateUserInfoDto) {
+		const userId = req.user.id;
+		return this.userService.updateUserInfo(userId, dto);
 	}
 
 	@CheckAuth('user', true)

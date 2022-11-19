@@ -6,19 +6,16 @@ import {
 	UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcryptjs';
 import { MailService } from 'src/mail/mail.service';
 import { RoleService } from 'src/role/role.service';
 import { TokenService } from 'src/token/token.service';
-import { AuthUser } from 'src/types/user-auth.inteface';
 
 import { User } from 'src/user/entities/user.entity';
 import { makeUserData } from 'src/utils/makeUserData';
 import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
-import { Token } from '../token/token.entity';
 
 @Injectable()
 export class AuthService {
