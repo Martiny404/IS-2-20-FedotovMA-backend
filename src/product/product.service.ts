@@ -85,7 +85,6 @@ export class ProductService {
 		if (!product) {
 			throw new NotFoundException('Продукт не найден!');
 		}
-		console.log('--------');
 		if (product.inStock - q < 0) return;
 
 		if (product.inStock - q == 0) {
@@ -99,6 +98,7 @@ export class ProductService {
 
 	async reduceSeveralQuantity(orderProducts: OrderProduct[]) {
 		try {
+			if (orderProducts.length == 0) return;
 			await Promise.all(
 				orderProducts.map(async op => {
 					return await this.reduceQuantity(op.product.id, op.quantity);
@@ -210,5 +210,39 @@ export class ProductService {
 		return {
 			avg: parseFloat(avg.average),
 		};
+	}
+
+	async returnProductFromOrder(id: number, q: number) {
+		try {
+			const product = await this.byId(id);
+			if (!product) {
+				throw new NotFoundException('Продукт не найден!');
+			}
+			if (
+				product.inStock == 0 &&
+				product.status == ProductStatus.NOT_AVAILABLE_FOR_FALSE
+			) {
+				product.inStock += q;
+				product.status = ProductStatus.ON_SALE;
+				return this.productRepo.save(product);
+			}
+			product.inStock += q;
+			return this.productRepo.save(product);
+		} catch (e) {
+			throw e;
+		}
+	}
+
+	async returnSeveralProductsFromOrder(orderProducts: OrderProduct[]) {
+		try {
+			if (orderProducts.length == 0) return;
+			await Promise.all(
+				orderProducts.map(async op => {
+					return await this.returnProductFromOrder(op.product.id, op.quantity);
+				})
+			);
+		} catch (e) {
+			throw e;
+		}
 	}
 }

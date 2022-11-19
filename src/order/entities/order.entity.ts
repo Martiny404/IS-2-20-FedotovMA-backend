@@ -36,4 +36,7 @@ export class Order extends Base {
 
 	@Column({ type: 'varchar', length: 6 })
 	activation_code: string;
+
+	@Column({ type: 'float', nullable: true })
+	total: number;
 }

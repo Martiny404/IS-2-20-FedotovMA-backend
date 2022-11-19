@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	Req,
+} from '@nestjs/common';
 import { CheckAuth } from 'src/decorators/auth.decorator';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
@@ -14,8 +22,27 @@ export class OrderController {
 	}
 
 	@CheckAuth('user', true)
+	@Post('/activate/:id')
+	async activateOrder(
+		@Param('id') id: string,
+		@Body('code') code: string,
+		@Req() req
+	) {
+		const userId = req.user.id;
+		return this.orderService.activateOrder(userId, +id, code);
+	}
+
+	@CheckAuth('user', true)
 	@Get('/:id')
-	async getOrder(@Param('id') id: string) {
-		return this.orderService.getOrder(+id);
+	async getOrder(@Param('id') id: string, @Req() req) {
+		const userId = req.user.id;
+		return this.orderService.getOrder(userId, +id);
+	}
+
+	@CheckAuth('user', true)
+	@Delete('/cancellation/:id')
+	async orderCancellation(@Param('id') id: string, @Req() req) {
+		const userId = req.user.id;
+		return this.orderService.removeOrder(userId, +id);
 	}
 }

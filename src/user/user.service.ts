@@ -121,6 +121,7 @@ export class UserService {
 		orderProducts: OrderProduct[]
 	) {
 		try {
+			if (orderProducts.length == 0) return;
 			const basketItems = await Promise.all(
 				orderProducts.map(async op => {
 					const basketItem = await this.getBasketItem(userId, op.product.id);

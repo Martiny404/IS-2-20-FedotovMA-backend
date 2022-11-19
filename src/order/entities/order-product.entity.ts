@@ -34,4 +34,7 @@ export class OrderProduct {
 
 	@Column({ type: 'float' })
 	price: number;
+
+	@Column({ type: 'int', nullable: true })
+	discount: number;
 }
