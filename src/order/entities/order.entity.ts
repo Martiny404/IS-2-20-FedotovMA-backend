@@ -4,7 +4,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { OrderProduct } from './order-product.entity';
 
 export enum OrderStatus {
-	COMPLETED = 'completed',
+	COMPLETED = 'COMPLETED',
 	CANCELLED = 'CANCELLED',
 	ON_THE_WAY = 'ON_THE_WAY',
 	WAITING_FOR_PAYMENT_OR_RECEIPT = 'WAITING FOR PAYMENT OR RECEIPT',

@@ -9,6 +9,7 @@ export class RoleService {
 	constructor(
 		@InjectRepository(Role) private readonly roleRepo: Repository<Role>
 	) {}
+
 	async createRole(dto: CreateRoleDto) {
 		const lowerRole = dto.value.toLowerCase();
 		const isRoleExist = await this.getRoleByValue(lowerRole);

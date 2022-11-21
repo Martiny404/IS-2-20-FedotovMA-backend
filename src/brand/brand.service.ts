@@ -15,6 +15,7 @@ export class BrandService {
 		@InjectRepository(Brand) private readonly brandRepo: Repository<Brand>,
 		private readonly categoryService: CategoryService
 	) {}
+
 	async create({ name, brandImgPath }: CreateBrandDto) {
 		const isBrandExist = await this.brandRepo.findOne({ where: { name } });
 

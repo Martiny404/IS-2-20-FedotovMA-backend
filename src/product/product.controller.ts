@@ -9,15 +9,18 @@ import {
 	Req,
 	Delete,
 	Query,
+	UseFilters,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CheckAuth } from 'src/decorators/auth.decorator';
+import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { RateProductDto } from './dto/rate-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
 import { ProductService } from './product.service';
 
+@UseFilters(HttpExceptionFilter)
 @Controller('product')
 export class ProductController {
 	constructor(private readonly productService: ProductService) {}

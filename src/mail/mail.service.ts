@@ -10,15 +10,13 @@ export class MailService {
 	) {}
 
 	async sendActivationMail(to: string, link: string) {
-		try {
-			this.mailerService.sendMail({
-				to,
-				from: this.configService.get('MAIL_USER'),
-				subject:
-					'Активация аккаунта на сайте: ' +
-					this.configService.get('CLIENT_URL'),
-				text: '',
-				html: `
+		this.mailerService.sendMail({
+			to,
+			from: this.configService.get('MAIL_USER'),
+			subject:
+				'Активация аккаунта на сайте: ' + this.configService.get('CLIENT_URL'),
+			text: '',
+			html: `
         <div>
 				<div style="color: #fff;text-align:center; width:300px; padding: 10px 20px; margin:0 auto; background-color: #fc8507; border-radius: 10px;">
 					<h1 style="color: #fff; font-weight: bold;">Привет дорогой друг!</h1>
@@ -32,24 +30,18 @@ export class MailService {
 				</div>
 			</div>
         `,
-			});
-		} catch (e) {
-			throw new InternalServerErrorException(
-				'Ошибка при отправке письма на почту'
-			);
-		}
+		});
 	}
 
 	async activeOrderMail(to: string, code: string, orderId: number) {
-		try {
-			this.mailerService.sendMail({
-				to,
-				from: this.configService.get('MAIL_USER'),
-				subject:
-					'Код подтверждения заказа на сайте: ' +
-					this.configService.get('CLIENT_URL'),
-				text: '',
-				html: `
+		this.mailerService.sendMail({
+			to,
+			from: this.configService.get('MAIL_USER'),
+			subject:
+				'Код подтверждения заказа на сайте: ' +
+				this.configService.get('CLIENT_URL'),
+			text: '',
+			html: `
         <div>
 				<div style="color: #fff;text-align:center; width:300px; padding: 10px 20px; margin:0 auto; background-color: #fc8507; border-radius: 10px;">
 					<h1 style="color: #fff; font-weight: bold;">Привет дорогой друг!</h1>
@@ -61,21 +53,17 @@ export class MailService {
 				</div>
 			</div>
         `,
-			});
-		} catch (e) {
-			throw e;
-		}
+		});
 	}
 
 	async sendUpdatingUserInfoCode(to: string, code: string) {
-		try {
-			this.mailerService.sendMail({
-				to,
-				from: this.configService.get('MAIL_USER'),
-				subject:
-					'Код для обновления профиля: ' + this.configService.get('CLIENT_URL'),
-				text: '',
-				html: `
+		this.mailerService.sendMail({
+			to,
+			from: this.configService.get('MAIL_USER'),
+			subject:
+				'Код для обновления профиля: ' + this.configService.get('CLIENT_URL'),
+			text: '',
+			html: `
         <div>
 				<div style="color: #fff;text-align:center; width:300px; padding: 10px 20px; margin:0 auto; background-color: #fc8507; border-radius: 10px;">
 					<h1 style="color: #fff; font-weight: bold;">Привет дорогой друг!</h1>
@@ -87,9 +75,6 @@ export class MailService {
 				</div>
 			</div>
         `,
-			});
-		} catch (e) {
-			throw e;
-		}
+		});
 	}
 }

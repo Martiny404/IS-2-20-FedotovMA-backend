@@ -28,19 +28,15 @@ export class OptionService {
 	}
 
 	async addOptionValues(optionId: number, value: string) {
-		try {
-			const option = await this.byId(optionId);
+		const option = await this.byId(optionId);
 
-			const optionValue = this.optionValueRepo.create({
-				value,
-			});
+		const optionValue = this.optionValueRepo.create({
+			value,
+		});
 
-			option.values = [...option.values, optionValue];
+		option.values = [...option.values, optionValue];
 
-			return await this.optionRepo.save(option);
-		} catch (e) {
-			throw e;
-		}
+		return await this.optionRepo.save(option);
 	}
 
 	async getByIds(valuesIds: number[]) {

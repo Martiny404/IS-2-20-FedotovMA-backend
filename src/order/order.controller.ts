@@ -6,11 +6,14 @@ import {
 	Param,
 	Post,
 	Req,
+	UseFilters,
 } from '@nestjs/common';
 import { CheckAuth } from 'src/decorators/auth.decorator';
+import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
 
+@UseFilters(HttpExceptionFilter)
 @Controller('order')
 export class OrderController {
 	constructor(private readonly orderService: OrderService) {}

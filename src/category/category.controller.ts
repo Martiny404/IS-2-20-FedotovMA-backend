@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseFilters } from '@nestjs/common';
+import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { CategoryService } from './category.service';
 import { AddOptionDto } from './dto/add-option.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
+@UseFilters(HttpExceptionFilter)
 @Controller('category')
 export class CategoryController {
 	constructor(private readonly categoryService: CategoryService) {}

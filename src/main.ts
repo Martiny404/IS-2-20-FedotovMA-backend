@@ -1,14 +1,18 @@
 import { ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import { AllExceptionsFilter } from './global-filters/all-exceptions.filter';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.setGlobalPrefix('api');
 	const PORT = process.env.PORT ?? 5000;
 
+	const httpAdapterHost = app.get(HttpAdapterHost);
 	app.useGlobalPipes(new ValidationPipe());
+
+	app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
 
 	app.use(cookieParser());
 

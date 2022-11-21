@@ -16,6 +16,7 @@ import { OptionModule } from './option/option.module';
 import { FileModule } from './file/file.module';
 import { OrderModule } from './order/order.module';
 import { TokenModule } from './token/token.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
 	imports: [
@@ -38,6 +39,7 @@ import { TokenModule } from './token/token.module';
 		FileModule,
 		OrderModule,
 		TokenModule,
+		StatisticsModule,
 	],
 	controllers: [],
 	providers: [],

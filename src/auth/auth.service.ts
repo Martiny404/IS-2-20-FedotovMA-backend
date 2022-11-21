@@ -28,50 +28,45 @@ export class AuthService {
 	) {}
 
 	async registration(email: string, password: string) {
-		try {
-			const potentialUser = await this.userRepo.findOne({
-				where: { email },
-			});
-			if (potentialUser) {
-				throw new BadRequestException('Пользователь уже существует!');
-			}
-			const passwordHash = await hash(password, 5);
-			const activationLink = v4();
-			const userRole = await this.roleService.getRoleByValue('user');
-
-			if (!userRole) {
-				throw new InternalServerErrorException('Ошибка сервера');
-			}
-
-			const user = this.userRepo.create({
-				email,
-				password: passwordHash,
-				activation_link: activationLink,
-				role: { id: userRole.id },
-			});
-			await this.userRepo.save(user);
-
-			await this.mailService.sendActivationMail(
-				email,
-				`${this.configService.get(
-					'API_URL'
-				)}/api/auth/activate/${activationLink}`
-			);
-			const userData = makeUserData(user);
-			const tokens = await this.tokenService.generateTokens(userData);
-			if (tokens)
-				await this.tokenService.saveRefreshToken(
-					userData.id,
-					tokens.refreshToken
-				);
-			return {
-				...tokens,
-				user: userData,
-			};
-		} catch (e) {
-			throw e;
+		const potentialUser = await this.userRepo.findOne({
+			where: { email },
+		});
+		if (potentialUser) {
+			throw new BadRequestException('Пользователь уже существует!');
 		}
+		const passwordHash = await hash(password, 5);
+		const activationLink = v4();
+		const userRole = await this.roleService.getRoleByValue('user');
+
+		if (!userRole) {
+			throw new InternalServerErrorException('Ошибка сервера');
+		}
+
+		const user = this.userRepo.create({
+			email,
+			password: passwordHash,
+			activation_link: activationLink,
+			role: { id: userRole.id },
+		});
+		await this.userRepo.save(user);
+
+		await this.mailService.sendActivationMail(
+			email,
+			`${this.configService.get('API_URL')}/api/auth/activate/${activationLink}`
+		);
+		const userData = makeUserData(user);
+		const tokens = await this.tokenService.generateTokens(userData);
+		if (tokens)
+			await this.tokenService.saveRefreshToken(
+				userData.id,
+				tokens.refreshToken
+			);
+		return {
+			...tokens,
+			user: userData,
+		};
 	}
+
 	async login(email: string, password: string) {
 		const user = await this.userRepo.findOne({
 			where: { email },
@@ -101,6 +96,7 @@ export class AuthService {
 			user: userData,
 		};
 	}
+
 	async activate(activationLink: string) {
 		const user = await this.userRepo.findOne({
 			where: { activation_link: activationLink },
@@ -120,10 +116,6 @@ export class AuthService {
 	}
 
 	async refresh(token: string) {
-		try {
-			return this.tokenService.refresh(token);
-		} catch (e) {
-			throw new UnauthorizedException(e.message);
-		}
+		return this.tokenService.refresh(token);
 	}
 }

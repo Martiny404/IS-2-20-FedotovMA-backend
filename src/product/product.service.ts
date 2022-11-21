@@ -40,11 +40,7 @@ export class ProductService {
 			category: { id: dto.categoryId },
 		});
 
-		try {
-			return await this.productRepo.save(newProduct);
-		} catch (e) {
-			throw new BadRequestException(e.message);
-		}
+		return await this.productRepo.save(newProduct);
 	}
 	async addOptions(id: number, dto: addOptionsToProductDto) {
 		const product = await this.productRepo.findOne({
@@ -97,16 +93,12 @@ export class ProductService {
 	}
 
 	async reduceSeveralQuantity(orderProducts: OrderProduct[]) {
-		try {
-			if (orderProducts.length == 0) return;
-			await Promise.all(
-				orderProducts.map(async op => {
-					return await this.reduceQuantity(op.product.id, op.quantity);
-				})
-			);
-		} catch (e) {
-			throw e;
-		}
+		if (orderProducts.length == 0) return;
+		await Promise.all(
+			orderProducts.map(async op => {
+				return await this.reduceQuantity(op.product.id, op.quantity);
+			})
+		);
 	}
 
 	async byId(id: number) {
@@ -173,31 +165,27 @@ export class ProductService {
 	}
 
 	async evaluteProduct(userId: number, productId: number, rate: number) {
-		try {
-			const user = await this.userService.byId(userId);
-			const product = await this.byId(productId);
+		const user = await this.userService.byId(userId);
+		const product = await this.byId(productId);
 
-			if (!user || !product) {
-				throw new NotFoundException('Продукт или пользователь не найден!');
-			}
-
-			const isExistRate = await this.ratingRepo.findOne({
-				where: { user: { id: userId }, product: { id: productId } },
-			});
-
-			if (isExistRate) {
-				throw new BadRequestException('Вы уже поставили оценку!');
-			}
-
-			const productRate = this.ratingRepo.create({
-				product: product,
-				user: user,
-				rate,
-			});
-			return this.ratingRepo.save(productRate);
-		} catch (e) {
-			throw e;
+		if (!user || !product) {
+			throw new NotFoundException('Продукт или пользователь не найден!');
 		}
+
+		const isExistRate = await this.ratingRepo.findOne({
+			where: { user: { id: userId }, product: { id: productId } },
+		});
+
+		if (isExistRate) {
+			throw new BadRequestException('Вы уже поставили оценку!');
+		}
+
+		const productRate = this.ratingRepo.create({
+			product: product,
+			user: user,
+			rate,
+		});
+		return this.ratingRepo.save(productRate);
 	}
 
 	async getAverageRate(productId: number) {
@@ -213,36 +201,28 @@ export class ProductService {
 	}
 
 	async returnProductFromOrder(id: number, q: number) {
-		try {
-			const product = await this.byId(id);
-			if (!product) {
-				throw new NotFoundException('Продукт не найден!');
-			}
-			if (
-				product.inStock == 0 &&
-				product.status == ProductStatus.NOT_AVAILABLE_FOR_FALSE
-			) {
-				product.inStock += q;
-				product.status = ProductStatus.ON_SALE;
-				return this.productRepo.save(product);
-			}
-			product.inStock += q;
-			return this.productRepo.save(product);
-		} catch (e) {
-			throw e;
+		const product = await this.byId(id);
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
 		}
+		if (
+			product.inStock == 0 &&
+			product.status == ProductStatus.NOT_AVAILABLE_FOR_FALSE
+		) {
+			product.inStock += q;
+			product.status = ProductStatus.ON_SALE;
+			return this.productRepo.save(product);
+		}
+		product.inStock += q;
+		return this.productRepo.save(product);
 	}
 
 	async returnSeveralProductsFromOrder(orderProducts: OrderProduct[]) {
-		try {
-			if (orderProducts.length == 0) return;
-			await Promise.all(
-				orderProducts.map(async op => {
-					return await this.returnProductFromOrder(op.product.id, op.quantity);
-				})
-			);
-		} catch (e) {
-			throw e;
-		}
+		if (orderProducts.length == 0) return;
+		await Promise.all(
+			orderProducts.map(async op => {
+				return await this.returnProductFromOrder(op.product.id, op.quantity);
+			})
+		);
 	}
 }
