@@ -1,19 +1,10 @@
 import { Brand } from 'src/brand/brand.entity';
 import { Category } from 'src/category/category.entity';
-import { OptionValue } from 'src/option/entities/option-value.entity';
 import { Wishlist } from 'src/user/entities/wishlist.entity';
 import { Rating } from './rating.entity';
 import { ProductImages } from './product-imgs.entity';
 import { Base } from '../../utils/base';
-import {
-	Column,
-	Entity,
-	JoinColumn,
-	JoinTable,
-	ManyToMany,
-	ManyToOne,
-	OneToMany,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Basket } from 'src/user/entities/basket.entity';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 
@@ -71,21 +62,6 @@ export class Product extends Base {
 
 	@OneToMany(() => OrderProduct, op => op.product)
 	productOrders: OrderProduct[];
-
-	@ManyToMany(() => OptionValue, {
-		onDelete: 'CASCADE',
-		onUpdate: 'CASCADE',
-	})
-	@JoinTable({
-		name: 'product_values',
-		joinColumn: {
-			name: 'product_id',
-		},
-		inverseJoinColumn: {
-			name: 'value_id',
-		},
-	})
-	productValues: OptionValue[];
 
 	@Column({ type: 'jsonb', default: {} })
 	options: Record<string, unknown>;

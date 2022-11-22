@@ -103,7 +103,6 @@ export class ProductService {
 
 	async byId(id: number) {
 		const product = await this.productRepo.findOne({ where: { id } });
-
 		return product;
 	}
 	async all() {
@@ -135,6 +134,44 @@ export class ProductService {
 		return {
 			count: response[1],
 			products: response[0],
+		};
+	}
+
+	async getProductInfo(id: number) {
+		const product = await this.productRepo.findOne({
+			where: { id },
+			relations: {
+				category: true,
+				brand: true,
+				images: true,
+			},
+			select: {
+				options: {},
+				id: true,
+				name: true,
+				discount_percentage: true,
+				price: true,
+				inStock: true,
+				status: true,
+				description: true,
+				category: {
+					id: true,
+					name: true,
+				},
+				brand: {
+					id: true,
+					name: true,
+				},
+			},
+		});
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		const rate = await this.getAverageRate(product.id);
+
+		return {
+			...product,
+			rate,
 		};
 	}
 

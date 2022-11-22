@@ -24,6 +24,7 @@ import { ProductService } from './product.service';
 @Controller('product')
 export class ProductController {
 	constructor(private readonly productService: ProductService) {}
+	@CheckAuth('admin', true)
 	@Post('/')
 	async create(@Body() dto: CreateProductDto) {
 		const product = await this.productService.create(dto);
@@ -34,6 +35,12 @@ export class ProductController {
 		return await this.productService.all();
 	}
 
+	@Get('/info/:id')
+	async getProductInfo(@Param('id') id: string) {
+		return this.productService.getProductInfo(+id);
+	}
+
+	@CheckAuth('admin', true)
 	@Patch('/:id')
 	async addOptions(
 		@Param('id') id: string,
@@ -42,12 +49,14 @@ export class ProductController {
 		return this.productService.addOptions(+id, dto);
 	}
 
+	@CheckAuth('admin', true)
 	@Post('/toggle-hidden/:id')
 	async toggleHidden(@Param('id') id: string, @Res() res: Response) {
 		const prod = await this.productService.toggleHidden(+id);
 		res.status(200).json(prod);
 	}
 
+	@CheckAuth('admin', true)
 	@Delete('/delete-options/:id')
 	async deleteOptions(@Param('id') id: string, @Body('keys') keys: string[]) {
 		return this.productService.deleteOptions(+id, keys);
@@ -65,6 +74,7 @@ export class ProductController {
 		return this.productService.getAverageRate(+id);
 	}
 
+	@CheckAuth('admin', true)
 	@Patch('/update/:id')
 	async update(
 		@Param('id') id: string,

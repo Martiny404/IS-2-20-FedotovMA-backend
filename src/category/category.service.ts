@@ -59,7 +59,16 @@ export class CategoryService {
 		return this.categoryRepo.save(category);
 	}
 
-	async getAllOptions() {
-		return await this.categoryRepo.find({ relations: ['options'] });
+	async getAllOptions(categoryId: number) {
+		return await this.categoryRepo.find({
+			where: {
+				id: categoryId,
+			},
+			relations: {
+				options: {
+					values: true,
+				},
+			},
+		});
 	}
 }

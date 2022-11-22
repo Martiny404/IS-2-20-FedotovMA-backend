@@ -15,9 +15,9 @@ export class CategoryController {
 		return category;
 	}
 
-	@Get('/all-options')
-	async getAllOptions() {
-		return this.categoryService.getAllOptions();
+	@Get('/all-options:/id')
+	async getAllOptions(@Param('id') id: string) {
+		return this.categoryService.getAllOptions(+id);
 	}
 
 	@Post('/add-options')

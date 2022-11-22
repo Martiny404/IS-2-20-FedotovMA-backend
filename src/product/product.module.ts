@@ -13,7 +13,7 @@ import { UserModule } from 'src/user/user.module';
 	providers: [ProductService],
 	controllers: [ProductController],
 	imports: [
-		TypeOrmModule.forFeature([Product, Rating, ProductImages, OptionValue]),
+		TypeOrmModule.forFeature([Product, Rating, ProductImages]),
 		UserModule,
 		OptionModule,
 	],

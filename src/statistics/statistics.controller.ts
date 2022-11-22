@@ -1,4 +1,5 @@
 import { Controller, Get, Query, UseFilters } from '@nestjs/common';
+import { CheckAuth } from 'src/decorators/auth.decorator';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { StatisticsService } from './statistics.service';
 
@@ -7,6 +8,7 @@ import { StatisticsService } from './statistics.service';
 export class StatisticsController {
 	constructor(private readonly statisticsService: StatisticsService) {}
 
+	@CheckAuth('admin', true)
 	@Get('/count-op')
 	async countOrdersProducts(@Query() query: Record<string, string>) {
 		const category = query?.category ?? '';
@@ -15,6 +17,7 @@ export class StatisticsController {
 		return this.statisticsService.countOrdersProducts(category, brand);
 	}
 
+	@CheckAuth('admin', true)
 	@Get('/by-date-range')
 	async getOrdersByDateRange(@Query() query: Record<string, string>) {
 		const startRange = query?.startRange ?? '';

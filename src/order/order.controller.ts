@@ -42,10 +42,17 @@ export class OrderController {
 		return this.orderService.getOrder(userId, +id);
 	}
 
-	@CheckAuth('user', true)
-	@Delete('/cancellation/:id')
-	async orderCancellation(@Param('id') id: string, @Req() req) {
+	@CheckAuth('admin', true)
+	@Delete('/remove/:id')
+	async removeOrder(@Param('id') id: string, @Req() req) {
 		const userId = req.user.id;
 		return this.orderService.removeOrder(userId, +id);
+	}
+
+	@CheckAuth('user', true)
+	@Delete('/cancle/:id')
+	async cancleOrder(@Param('id') id: string, @Req() req) {
+		const userId = req.user.id;
+		return this.orderService.cancleOrder(userId, +id);
 	}
 }

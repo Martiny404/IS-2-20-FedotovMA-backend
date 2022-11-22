@@ -118,4 +118,13 @@ export class OrderService {
 		await this.orderRepo.remove(order);
 		return true;
 	}
+
+	async cancleOrder(userId: number, orderId: number) {
+		const order = await this.getOrder(userId, orderId);
+		await this.productService.returnSeveralProductsFromOrder(
+			order.orderProducts
+		);
+		order.orderStatus = OrderStatus.CANCELLED;
+		return this.orderRepo.save(order);
+	}
 }
