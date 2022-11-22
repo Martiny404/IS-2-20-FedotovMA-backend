@@ -40,7 +40,14 @@ export class Product extends Base {
 	@Column({ type: 'int', nullable: true })
 	discount_percentage: number;
 
-	@OneToMany(() => ProductImages, productImages => productImages.product)
+	@Column({ type: 'varchar', nullable: true })
+	poster: string;
+
+	@OneToMany(() => ProductImages, productImages => productImages.product, {
+		cascade: true,
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE',
+	})
 	images: ProductImages[];
 
 	@ManyToOne(() => Category, category => category.products)
@@ -60,7 +67,11 @@ export class Product extends Base {
 	@OneToMany(() => Basket, basket => basket.product)
 	baskets: Basket[];
 
-	@OneToMany(() => OrderProduct, op => op.product)
+	@OneToMany(() => OrderProduct, op => op.product, {
+		cascade: true,
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	productOrders: OrderProduct[];
 
 	@Column({ type: 'jsonb', default: {} })

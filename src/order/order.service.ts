@@ -41,28 +41,28 @@ export class OrderService {
 			user: { id: user.id },
 			order_date,
 		});
+		await this.orderRepo.save(order);
+		const orderProducts = orderProductsDto.map(op => {
+			const orderProduct = this.orderProductRepo.create({
+				order: { id: order.id },
+				product: { id: op.productId },
+				price: op.price,
+				quantity: op.quantity,
+				discount: op.discount,
+			});
+			return orderProduct;
+		});
 
 		await this.orderRepo.save(order);
-		const orderProducts = await Promise.all(
-			orderProductsDto.map(op => {
-				const orderProduct = this.orderProductRepo.create({
-					order: { id: order.id },
-					product: { id: op.productId },
-					price: op.price,
-					quantity: op.quantity,
-					discount: op.discount,
-				});
-				return this.orderProductRepo.save(orderProduct);
-			})
-		);
 		order.total = countOrderTotal(orderProducts);
 		order.orderProducts = orderProducts;
+		await this.orderRepo.save(order);
 		await this.mailService.activeOrderMail(
 			user.email,
 			order.activation_code,
 			order.id
 		);
-		await this.orderRepo.save(order);
+
 		try {
 			await this.userService.removeSeveralProductsFromBasket(
 				user.id,

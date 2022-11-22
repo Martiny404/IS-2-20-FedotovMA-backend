@@ -1,17 +1,35 @@
-import { IsString } from 'class-validator';
+import {
+	IsNumber,
+	IsOptional,
+	IsPositive,
+	IsString,
+	Length,
+	Max,
+} from 'class-validator';
 import { ProductStatus } from '../entities/product.entity';
 
 export class updateProductDto {
+	@IsOptional()
 	@IsString()
+	@Length(5, 40, { message: 'Название должно быть от 5 до 40 символов' })
 	name: string;
 
-	status?: ProductStatus;
+	@IsOptional()
+	status: ProductStatus;
 
-	price?: number;
+	@IsOptional()
+	@IsNumber()
+	@IsPositive()
+	@Max(120_000_00000)
+	price: number;
 
+	@IsOptional()
+	@IsNumber()
+	@IsPositive()
+	@Max(99)
 	discount_percentage?: number;
 
-	categoryId?: number;
-
-	brandId?: number;
+	@IsString()
+	@IsOptional()
+	poster: string;
 }

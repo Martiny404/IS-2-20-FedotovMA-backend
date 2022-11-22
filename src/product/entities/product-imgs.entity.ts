@@ -12,14 +12,8 @@ export class ProductImages {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({ type: 'varchar', nullable: true, name: 'big_photo' })
-	bigPhoto: string;
-
-	@Column({ type: 'varchar', nullable: true, name: 'main_photo' })
-	mainPhoto: string;
-
-	@Column({ type: 'varchar', nullable: true, name: 'secondary_photo' })
-	secondaryPhoto: string;
+	@Column({ type: 'varchar', nullable: true, name: 'photo' })
+	photo: string;
 
 	@ManyToOne(() => Product, product => product.images)
 	@JoinColumn({ name: 'product_id' })

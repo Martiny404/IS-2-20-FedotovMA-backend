@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
+import { ProductImages } from './entities/product-imgs.entity';
 import { Product, ProductStatus } from './entities/product.entity';
 import { Rating } from './entities/rating.entity';
 
@@ -21,7 +22,9 @@ export class ProductService {
 		private readonly productRepo: Repository<Product>,
 		private readonly optionService: OptionService,
 		private readonly userService: UserService,
-		@InjectRepository(Rating) private readonly ratingRepo: Repository<Rating>
+		@InjectRepository(Rating) private readonly ratingRepo: Repository<Rating>,
+		@InjectRepository(ProductImages)
+		private readonly productImgRepo: Repository<ProductImages>
 	) {}
 
 	async create(dto: CreateProductDto) {
@@ -42,6 +45,7 @@ export class ProductService {
 
 		return await this.productRepo.save(newProduct);
 	}
+
 	async addOptions(id: number, dto: addOptionsToProductDto) {
 		const product = await this.productRepo.findOne({
 			where: { id },
@@ -105,17 +109,14 @@ export class ProductService {
 		const product = await this.productRepo.findOne({ where: { id } });
 		return product;
 	}
-	async all() {
-		let page = 1;
-		let limit = 9;
+
+	async all(category: string, page: number, limit: number) {
 		let offset = page * limit - limit;
 
 		const filters = [
 			{ key: 'ram', value: '8gb' },
 			{ key: 'hdd', value: ['256gb', '512gb'] },
 		];
-
-		const category = 'Ноутбук';
 
 		const p = this.productRepo
 			.createQueryBuilder('p')
@@ -130,6 +131,8 @@ export class ProductService {
 				p.andWhere(`p.options @> '{"${filter.key}": "${filter.value}"}'`);
 			}
 		}
+		p.offset(offset);
+
 		const response = await p.getManyAndCount();
 		return {
 			count: response[1],
@@ -154,6 +157,7 @@ export class ProductService {
 				inStock: true,
 				status: true,
 				description: true,
+				poster: true,
 				category: {
 					id: true,
 					name: true,
@@ -175,6 +179,22 @@ export class ProductService {
 		};
 	}
 
+	async addImage(path: string, productId) {
+		const product = await this.productRepo.findOne({
+			where: { id: productId },
+			relations: { images: true },
+		});
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		const img = this.productImgRepo.create({
+			photo: path,
+			product: { id: product.id },
+		});
+		product.images = [...product.images, img];
+		return this.productRepo.save(product);
+	}
+
 	async toggleHidden(id: number) {
 		const product = await this.productRepo.findOne({ where: { id } });
 		if (!product) {
@@ -188,17 +208,13 @@ export class ProductService {
 		const product = await this.productRepo.findOne({ where: { id } });
 
 		if (!product) {
-			throw new BadRequestException('Продукта не существует!');
+			throw new NotFoundException('Продукт не найден!');
 		}
-		product.name = dto.name;
-		if (dto.price) product.price = dto.price;
-		if (dto.status) product.status = dto.status;
-		if (dto.discount_percentage)
-			product.discount_percentage = dto.discount_percentage;
-		if (dto.categoryId) product.category.id = dto.categoryId;
-		if (dto.brandId) product.brand.id = dto.brandId;
-		if (dto.price) product.price = dto.price;
-		return await this.productRepo.save(product);
+
+		return await this.productRepo.save({
+			...product,
+			...dto,
+		});
 	}
 
 	async evaluteProduct(userId: number, productId: number, rate: number) {

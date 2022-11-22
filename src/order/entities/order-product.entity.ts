@@ -13,19 +13,11 @@ export class OrderProduct {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ManyToOne(() => Order, order => order.orderProducts, {
-		cascade: true,
-		onDelete: 'CASCADE',
-		onUpdate: 'CASCADE',
-	})
+	@ManyToOne(() => Order, order => order.orderProducts)
 	@JoinColumn({ name: 'order_id' })
 	order: Order;
 
-	@ManyToOne(() => Product, product => product.productOrders, {
-		cascade: true,
-		onDelete: 'CASCADE',
-		onUpdate: 'CASCADE',
-	})
+	@ManyToOne(() => Product, product => product.productOrders)
 	@JoinColumn({ name: 'product_id' })
 	product: Product;
 

@@ -20,7 +20,11 @@ export class Order extends Base {
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@OneToMany(() => OrderProduct, op => op.order)
+	@OneToMany(() => OrderProduct, op => op.order, {
+		cascade: true,
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	orderProducts: OrderProduct[];
 
 	@Column({

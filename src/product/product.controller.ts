@@ -31,8 +31,16 @@ export class ProductController {
 		return product;
 	}
 	@Get('/')
-	async getAll() {
-		return await this.productService.all();
+	async getAll(@Query() query) {
+		const category = query.category;
+		const page = +query.page || 1;
+		const limit = +query.limit || 9;
+		console.log({
+			category,
+			limit,
+			page,
+		});
+		return await this.productService.all(category, page, limit);
 	}
 
 	@Get('/info/:id')
@@ -47,6 +55,12 @@ export class ProductController {
 		@Body() dto: addOptionsToProductDto
 	) {
 		return this.productService.addOptions(+id, dto);
+	}
+
+	@CheckAuth('admin', true)
+	@Patch('/add-img/:id')
+	async addImage(@Param('id') id: string, @Body('path') path: string) {
+		return this.productService.addImage(path, +id);
 	}
 
 	@CheckAuth('admin', true)

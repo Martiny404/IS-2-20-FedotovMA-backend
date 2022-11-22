@@ -14,7 +14,7 @@ export class CreateProductDto {
 
 	@IsNumber()
 	@IsPositive()
-	@Max(120_000_000)
+	@Max(120_000_00000)
 	price: number;
 
 	@IsNumber()
@@ -24,4 +24,7 @@ export class CreateProductDto {
 	@IsNumber()
 	@IsPositive()
 	brandId: number;
+
+	@IsString()
+	poster: string;
 }
