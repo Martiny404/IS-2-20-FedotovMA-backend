@@ -119,6 +119,18 @@ export class UserService {
 		return wishlist;
 	}
 
+	async getUserBasket() {
+		const basket = await this.basketRepo.find({
+			where: {
+				user: { id: 3 },
+			},
+			relations: {
+				product: true,
+			},
+		});
+		return basket;
+	}
+
 	async addToBasket(userId: number, productId: number) {
 		const productInUserBasket = await this.basketRepo.findOne({
 			where: { user: { id: userId }, product: { id: productId } },

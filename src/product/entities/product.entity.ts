@@ -4,9 +4,18 @@ import { Wishlist } from 'src/user/entities/wishlist.entity';
 import { Rating } from './rating.entity';
 import { ProductImages } from './product-imgs.entity';
 import { Base } from '../../utils/base';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+	Column,
+	Entity,
+	JoinColumn,
+	JoinTable,
+	ManyToMany,
+	ManyToOne,
+	OneToMany,
+} from 'typeorm';
 import { Basket } from 'src/user/entities/basket.entity';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
+import { OptionValue } from 'src/option/entities/option-value.entity';
 
 export enum ProductStatus {
 	PREPARING_FOR_SALE = 'PREPARING_FOR_SALE',
@@ -75,5 +84,5 @@ export class Product extends Base {
 	productOrders: OrderProduct[];
 
 	@Column({ type: 'jsonb', default: {} })
-	options: Record<string, unknown>;
+	options: Record<string, string | number | boolean>;
 }

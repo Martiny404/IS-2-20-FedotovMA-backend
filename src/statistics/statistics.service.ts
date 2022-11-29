@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { Order } from 'src/order/entities/order.entity';
+import { ProductService } from 'src/product/product.service';
 import { DateFilter } from 'src/types/dateFilter.type';
-import { parseFilterDate } from 'src/utils/parseFilterDate';
 import { Between, Repository } from 'typeorm';
 
 @Injectable()
@@ -17,12 +17,25 @@ export class StatisticsService {
 	async countOrdersProducts(category?: string, brand?: string) {
 		const query = this.orderProductRepo
 			.createQueryBuilder('s')
-			.select(['COUNT(*) as c', 'p.name as product_name', 'p.id as product_id'])
+			.select([
+				'COUNT(*) as c',
+				'AVG(r.rate) as rating',
+				'p.name as name',
+				'p.id as id',
+				'p.created_at',
+				'p.options as options',
+				'p.price as price',
+				'p.discount_percentage as discount_percentage',
+				'p.poster as poster',
+				'cat.name as category_name',
+				'b.name as brand_name',
+			])
 			.innerJoin('s.product', 'p')
 			.innerJoin('p.category', 'cat')
 			.innerJoin('p.brand', 'b')
-			.groupBy('p.id')
-			.orderBy('c', 'DESC');
+			.innerJoin('p.rating', 'r')
+			.groupBy('p.id, cat.id, b.id');
+
 		if (category) {
 			query.where('cat.name =:cat', { cat: category });
 		}

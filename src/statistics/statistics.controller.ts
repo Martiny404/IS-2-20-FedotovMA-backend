@@ -8,7 +8,6 @@ import { StatisticsService } from './statistics.service';
 export class StatisticsController {
 	constructor(private readonly statisticsService: StatisticsService) {}
 
-	@CheckAuth('admin', true)
 	@Get('/count-op')
 	async countOrdersProducts(@Query() query: Record<string, string>) {
 		const category = query?.category ?? '';

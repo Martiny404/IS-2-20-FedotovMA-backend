@@ -7,6 +7,12 @@ import { AllExceptionsFilter } from './global-filters/all-exceptions.filter';
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.setGlobalPrefix('api');
+
+	app.enableCors({
+		credentials: true,
+		origin: 'http://localhost:3000',
+	});
+
 	const PORT = process.env.PORT ?? 5000;
 
 	const httpAdapterHost = app.get(HttpAdapterHost);

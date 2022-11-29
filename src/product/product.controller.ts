@@ -30,6 +30,7 @@ export class ProductController {
 		const product = await this.productService.create(dto);
 		return product;
 	}
+
 	@Get('/')
 	async getAll(@Query() query) {
 		const category = query.category;

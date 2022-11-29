@@ -49,4 +49,15 @@ export class BrandService {
 
 		return await this.brandRepo.save(brand);
 	}
+
+	async byId(id: number) {
+		const brand = await this.brandRepo.findOne({
+			where: { id },
+			relations: { products: true, categories: true, offers: true },
+		});
+		if (!brand) {
+			throw new NotFoundException('Бренда не существует!');
+		}
+		return brand;
+	}
 }

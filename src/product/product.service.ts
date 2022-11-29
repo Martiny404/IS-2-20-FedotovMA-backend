@@ -41,6 +41,7 @@ export class ProductService {
 			price: dto.price,
 			brand: { id: dto.brandId },
 			category: { id: dto.categoryId },
+			poster: dto.poster,
 		});
 
 		return await this.productRepo.save(newProduct);
@@ -114,7 +115,7 @@ export class ProductService {
 		let offset = page * limit - limit;
 
 		const filters = [
-			{ key: 'ram', value: '8gb' },
+			{ key: 'ram', value: ['8gb'] },
 			{ key: 'hdd', value: ['256gb', '512gb'] },
 		];
 
@@ -124,12 +125,8 @@ export class ProductService {
 			.innerJoinAndSelect('p.brand', 'b')
 			.where('c.name = :name', { name: category });
 		for (const filter of filters) {
-			if (Array.isArray(filter.value)) {
-				const values = filter.value.map(v => `'${v}'`).join();
-				p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
-			} else {
-				p.andWhere(`p.options @> '{"${filter.key}": "${filter.value}"}'`);
-			}
+			const values = filter.value.map(v => `'${v}'`).join();
+			p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
 		}
 		p.offset(offset);
 
@@ -248,9 +245,15 @@ export class ProductService {
 			.where('rating.product = :id', { id: productId })
 			.getRawOne<{ average: string }>();
 
-		return {
-			avg: parseFloat(avg.average),
-		};
+		if (avg.average) {
+			return {
+				avg: parseFloat(avg.average),
+			};
+		} else {
+			return {
+				avg: 0,
+			};
+		}
 	}
 
 	async returnProductFromOrder(id: number, q: number) {
