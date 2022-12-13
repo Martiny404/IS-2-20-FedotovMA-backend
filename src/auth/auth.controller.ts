@@ -8,6 +8,7 @@ import {
 	Res,
 	UseFilters,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { AuthService } from './auth.service';
@@ -16,7 +17,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 @UseFilters(HttpExceptionFilter)
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(
+		private readonly authService: AuthService,
+		private readonly configService: ConfigService
+	) {}
 
 	@Post('registration')
 	async registration(@Body() userDto: CreateUserDto, @Res() res: Response) {
@@ -50,7 +54,7 @@ export class AuthController {
 	@Get('activate/:link')
 	async activate(@Param('link') activationLink: string, @Res() res: Response) {
 		await this.authService.activate(activationLink);
-		return res.redirect('https://ya.ru');
+		return res.redirect(this.configService.get('CLIENT_URL'));
 	}
 
 	@Get('refresh')

@@ -48,15 +48,11 @@ export class UserController {
 		return this.userService.getUserWishlist(userId);
 	}
 
-	// @CheckAuth('user', true)
-	// @Get('/basket')
-	// async getUserBasket(@Req() req) {
-	// 	const userId = req.user.id;
-	// 	return this.userService.getUserBasket(userId);
-	// }
+	@CheckAuth('user', true)
 	@Get('/basket')
-	async getUserBasket() {
-		return this.userService.getUserBasket();
+	async getUserBasket(@Req() req) {
+		const userId = req.user.id;
+		return this.userService.getUserBasket(userId);
 	}
 
 	@CheckAuth('user', true)

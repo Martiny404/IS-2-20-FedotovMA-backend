@@ -17,6 +17,10 @@ export class CategoryService {
 		private readonly optionService: OptionService
 	) {}
 
+	async getAll() {
+		return this.categoryRepo.find();
+	}
+
 	async create({ name, categoryImgPath }: CreateCategoryDto) {
 		const isCategoryExist = await this.byName(name);
 

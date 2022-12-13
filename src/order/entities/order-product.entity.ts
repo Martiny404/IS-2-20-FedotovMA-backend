@@ -13,7 +13,11 @@ export class OrderProduct {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ManyToOne(() => Order, order => order.orderProducts)
+	@ManyToOne(() => Order, order => order.orderProducts, {
+		cascade: true,
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	@JoinColumn({ name: 'order_id' })
 	order: Order;
 
@@ -23,10 +27,4 @@ export class OrderProduct {
 
 	@Column({ type: 'int' })
 	quantity: number;
-
-	@Column({ type: 'float' })
-	price: number;
-
-	@Column({ type: 'int', nullable: true })
-	discount: number;
 }

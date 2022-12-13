@@ -27,6 +27,20 @@ export class SpecialOfferService {
 		return this.specialOfferRepo.save(offer);
 	}
 
+	async getFreshOffers() {
+		const offers = await this.specialOfferRepo.find({
+			relations: {
+				brand: true,
+				category: true,
+			},
+			order: {
+				createdAt: 'DESC',
+			},
+			take: 3,
+		});
+		return offers;
+	}
+
 	async byId(id: number) {
 		const offer = await this.specialOfferRepo.findOne({
 			where: { id },
@@ -57,6 +71,27 @@ export class SpecialOfferService {
 			relations: {
 				category: true,
 				brand: true,
+			},
+		});
+	}
+
+	async getOffersByBrand(brandId: number) {
+		return this.specialOfferRepo.find({
+			where: {
+				brand: { id: brandId },
+			},
+			relations: {
+				category: true,
+				brand: true,
+			},
+		});
+	}
+
+	async getAll() {
+		return this.specialOfferRepo.find({
+			relations: {
+				brand: true,
+				category: true,
 			},
 		});
 	}

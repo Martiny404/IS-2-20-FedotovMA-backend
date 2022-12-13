@@ -31,16 +31,13 @@ export class ProductController {
 		return product;
 	}
 
+	@CheckAuth('user')
 	@Get('/')
 	async getAll(@Query() query) {
 		const category = query.category;
 		const page = +query.page || 1;
 		const limit = +query.limit || 9;
-		console.log({
-			category,
-			limit,
-			page,
-		});
+
 		return await this.productService.all(category, page, limit);
 	}
 
@@ -98,5 +95,17 @@ export class ProductController {
 	) {
 		const prod = await this.productService.update(+id, dto);
 		res.status(200).json(prod);
+	}
+
+	@Get('/with-discount/:categoryId')
+	async getProductsWithDiscountByCategory(
+		@Param('categoryId') categoryId: string
+	) {
+		return this.productService.getProductsWithDiscountByCategory(+categoryId);
+	}
+
+	@Get('/with-discount/:brandId')
+	async getProductsWithDiscountByBrand(@Param('brandId') brandId: string) {
+		return this.productService.getProductsWithDiscountByBrand(+brandId);
 	}
 }

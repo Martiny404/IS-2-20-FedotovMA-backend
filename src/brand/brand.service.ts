@@ -16,6 +16,10 @@ export class BrandService {
 		private readonly categoryService: CategoryService
 	) {}
 
+	async getAll() {
+		return this.brandRepo.find();
+	}
+
 	async create({ name, brandImgPath }: CreateBrandDto) {
 		const isBrandExist = await this.brandRepo.findOne({ where: { name } });
 

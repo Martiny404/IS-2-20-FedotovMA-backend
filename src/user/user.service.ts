@@ -14,6 +14,7 @@ import { updateUserInfoDto } from './dto/update-user-info.dto';
 import { generateCode } from 'src/utils/generateCode';
 import { MailService } from 'src/mail/mail.service';
 import { compare, hash } from 'bcryptjs';
+import { CheckAuth } from 'src/decorators/auth.decorator';
 
 @Injectable()
 export class UserService {
@@ -24,8 +25,21 @@ export class UserService {
 		private readonly mailService: MailService
 	) {}
 
+	@CheckAuth('admin', true)
 	async getAll() {
-		const users = await this.userRepo.find();
+		const users = await this.userRepo.find({
+			relations: {
+				role: true,
+			},
+			select: {
+				email: true,
+				createdAt: true,
+				id: true,
+				isActivated: true,
+				role: { roleName: true },
+			},
+			order: { createdAt: 'ASC' },
+		});
 		return users;
 	}
 	async byId(id: number) {
@@ -119,14 +133,12 @@ export class UserService {
 		return wishlist;
 	}
 
-	async getUserBasket() {
+	async getUserBasket(userId: number) {
 		const basket = await this.basketRepo.find({
 			where: {
-				user: { id: 3 },
+				user: { id: userId },
 			},
-			relations: {
-				product: true,
-			},
+			relations: { product: { category: true, brand: true, rating: true } },
 		});
 		return basket;
 	}

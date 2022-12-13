@@ -1,12 +1,21 @@
-import { OrderProduct } from 'src/order/entities/order-product.entity';
+interface ICounterTotal {
+	quantity: number;
+	price: number;
+	discount?: number;
+}
 
-export function countOrderTotal(orderProducts: OrderProduct[]): number {
-	const total = orderProducts.reduce((acc, item) => {
+export function countOrderTotal(prods: ICounterTotal[]): number {
+	let total: number = 0;
+
+	for (const item of prods) {
 		if (item.discount) {
 			const singlePrice = item.price - item.price * (item.discount / 100);
-			const multiPrice = singlePrice * item.quantity;
-			return (acc += multiPrice);
+			const result = singlePrice * item.quantity;
+			total += result;
+		} else {
+			total += item.price * item.quantity;
 		}
-	}, 0);
+	}
+
 	return total;
 }

@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OptionService } from 'src/option/option.service';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { UserService } from 'src/user/user.service';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
@@ -111,7 +111,12 @@ export class ProductService {
 		return product;
 	}
 
-	async all(category: string, page: number, limit: number) {
+	async all(
+		category: string,
+		page: number,
+		limit: number,
+		brands: number[] = []
+	) {
 		let offset = page * limit - limit;
 
 		const filters = [
@@ -124,6 +129,11 @@ export class ProductService {
 			.innerJoinAndSelect('p.category', 'c')
 			.innerJoinAndSelect('p.brand', 'b')
 			.where('c.name = :name', { name: category });
+
+		if (brands.length > 0) {
+			p.andWhere('b.id IN (:...brands)', { brands });
+		}
+
 		for (const filter of filters) {
 			const values = filter.value.map(v => `'${v}'`).join();
 			p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
@@ -280,5 +290,32 @@ export class ProductService {
 				return await this.returnProductFromOrder(op.product.id, op.quantity);
 			})
 		);
+	}
+
+	async getProductsWithDiscountByCategory(categoryId: number) {
+		const products = this.productRepo.find({
+			where: {
+				category: { id: categoryId },
+				discount_percentage: MoreThan(0),
+			},
+			relations: {
+				category: true,
+				brand: true,
+			},
+		});
+		return products;
+	}
+	async getProductsWithDiscountByBrand(brandId: number) {
+		const products = this.productRepo.find({
+			where: {
+				brand: { id: brandId },
+				discount_percentage: MoreThan(0),
+			},
+			relations: {
+				category: true,
+				brand: true,
+			},
+		});
+		return products;
 	}
 }

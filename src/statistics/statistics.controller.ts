@@ -10,8 +10,8 @@ export class StatisticsController {
 
 	@Get('/count-op')
 	async countOrdersProducts(@Query() query: Record<string, string>) {
-		const category = query?.category ?? '';
-		const brand = query?.brand ?? '';
+		const category = query?.category ?? null;
+		const brand = query?.brand ?? null;
 
 		return this.statisticsService.countOrdersProducts(category, brand);
 	}
@@ -19,8 +19,8 @@ export class StatisticsController {
 	@CheckAuth('admin', true)
 	@Get('/by-date-range')
 	async getOrdersByDateRange(@Query() query: Record<string, string>) {
-		const startRange = query?.startRange ?? '';
-		const endRange = query?.endRange ?? '';
+		const startRange = query?.start ?? '';
+		const endRange = query?.end ?? '';
 		return this.statisticsService.getOrdersByDateRange(startRange, endRange);
 	}
 }

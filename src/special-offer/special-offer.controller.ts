@@ -13,6 +13,16 @@ export class SpecialOfferController {
 		return this.specialOfferService.create(dto);
 	}
 
+	@Get('/')
+	async getAll() {
+		return this.specialOfferService.getAll();
+	}
+
+	@Get('/fresh')
+	async getFreshOffers() {
+		return this.specialOfferService.getFreshOffers();
+	}
+
 	@Get('/:id')
 	async byId(@Param('id') id: string) {
 		return this.specialOfferService.byId(+id);
@@ -21,6 +31,11 @@ export class SpecialOfferController {
 	@Get('/by-category:/id')
 	async getOffersByCategory(@Param('id') id: string) {
 		return this.specialOfferService.getOffersByCategory(+id);
+	}
+
+	@Get('/by-brand:/id')
+	async getOffersByBrand(@Param('id') id: string) {
+		return this.specialOfferService.getOffersByBrand(+id);
 	}
 
 	@Delete('/remove/:id')

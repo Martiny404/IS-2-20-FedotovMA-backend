@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { Order } from 'src/order/entities/order.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { ProductService } from 'src/product/product.service';
+
 import { DateFilter } from 'src/types/dateFilter.type';
 import { Between, Repository } from 'typeorm';
 
@@ -11,41 +13,34 @@ export class StatisticsService {
 	constructor(
 		@InjectRepository(OrderProduct)
 		private readonly orderProductRepo: Repository<OrderProduct>,
-		@InjectRepository(Order) private readonly orderRepo: Repository<Order>
+		@InjectRepository(Order) private readonly orderRepo: Repository<Order>,
+		@InjectRepository(Product) private readonly productRepo: Repository<Product>
 	) {}
 
 	async countOrdersProducts(category?: string, brand?: string) {
-		const query = this.orderProductRepo
-			.createQueryBuilder('s')
-			.select([
-				'COUNT(*) as c',
-				'AVG(r.rate) as rating',
-				'p.name as name',
-				'p.id as id',
-				'p.created_at',
-				'p.options as options',
-				'p.price as price',
-				'p.discount_percentage as discount_percentage',
-				'p.poster as poster',
-				'cat.name as category_name',
-				'b.name as brand_name',
-			])
-			.innerJoin('s.product', 'p')
-			.innerJoin('p.category', 'cat')
-			.innerJoin('p.brand', 'b')
-			.innerJoin('p.rating', 'r')
-			.groupBy('p.id, cat.id, b.id');
+		let queryString = `SELECT DISTINCT ON (product.id)  product.name as product_name, product.in_stock, product.poster, product.price, product.description,product."options", product.discount_percentage, product.id as id,  brand.name as brand_name, category.name as category_name, count(order_product.product_id)AS c, AVG(rating.rate) as rating FROM product
+		INNER JOIN order_product on order_product.product_id = product.id
+		INNER JOIN brand on brand."id" = product.brand_id
+		INNER JOIN rating on product."id" = rating.product_id
+		INNER JOIN category on category."id" = product.category_id
+		GROUP BY product.id, category.id, brand.id, rating.id`;
 
-		if (category) {
-			query.where('cat.name =:cat', { cat: category });
+		if (category && !brand) {
+			queryString += ` HAVING category.name = ${category};`;
 		}
-		if (brand) {
-			query.andWhere('b.name =:brand', { brand: brand });
+		if (!category && brand) {
+			queryString += ` HAVING brand.name = ${brand};`;
 		}
 
-		const data = await query.getRawMany();
+		if (brand && category) {
+			queryString += `	HAVING brand.name = ${brand} AND  category.name = ${category}`;
+		}
 
-		return data;
+		queryString += ' LIMIT 9';
+
+		const q = await this.productRepo.query(queryString);
+
+		return q.sort((a: any, b: any) => b.c - a.c);
 	}
 
 	async getOrdersByDateRange(start?: string, end?: string) {
@@ -72,9 +67,7 @@ export class StatisticsService {
 					email: true,
 				},
 				orderProducts: {
-					discount: true,
 					quantity: true,
-					price: true,
 					product: {
 						name: true,
 						inStock: true,

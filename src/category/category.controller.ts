@@ -9,10 +9,19 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 export class CategoryController {
 	constructor(private readonly categoryService: CategoryService) {}
 
-	@Post()
+	@Post('/')
 	async create(@Body() dto: CreateCategoryDto) {
 		const category = await this.categoryService.create(dto);
 		return category;
+	}
+
+	@Get('/all')
+	async getAll() {
+		return this.categoryService.getAll();
+	}
+	@Get('/:id')
+	async byId(@Param('id') id: string) {
+		return this.categoryService.byId(+id);
 	}
 
 	@Get('/all-options:/id')

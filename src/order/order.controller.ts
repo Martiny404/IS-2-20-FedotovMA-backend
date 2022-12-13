@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CheckAuth } from 'src/decorators/auth.decorator';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
+import { ActivateOrderDto } from './dto/activate-order.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
 
@@ -17,6 +18,19 @@ import { OrderService } from './order.service';
 @Controller('order')
 export class OrderController {
 	constructor(private readonly orderService: OrderService) {}
+
+	@CheckAuth('admin', true)
+	@Get('/all')
+	async getAll() {
+		return this.orderService.getAll();
+	}
+
+	@CheckAuth('admin', true)
+	@Get('/info/:id')
+	async getOrderInfo(@Param('id') id: string) {
+		return this.orderService.getOrderInfo(+id);
+	}
+
 	@CheckAuth('user', true)
 	@Post('/')
 	async createOrder(@Req() req, @Body() dto: CreateOrderDto) {
@@ -25,14 +39,17 @@ export class OrderController {
 	}
 
 	@CheckAuth('user', true)
-	@Post('/activate/:id')
-	async activateOrder(
-		@Param('id') id: string,
-		@Body('code') code: string,
-		@Req() req
-	) {
+	@Post('/send-code/')
+	async sendActivationCode(@Body('orderId') orderId: number, @Req() req) {
 		const userId = req.user.id;
-		return this.orderService.activateOrder(userId, +id, code);
+		return this.orderService.sendValidationCode(userId, orderId);
+	}
+
+	@CheckAuth('user', true)
+	@Post('/activate')
+	async activateOrder(@Body() dto: ActivateOrderDto, @Req() req) {
+		const userId = req.user.id;
+		return this.orderService.activateOrder(userId, dto.orderId, dto.code);
 	}
 
 	@CheckAuth('user', true)

@@ -20,11 +20,7 @@ export class Order extends Base {
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@OneToMany(() => OrderProduct, op => op.order, {
-		cascade: true,
-		onDelete: 'CASCADE',
-		onUpdate: 'CASCADE',
-	})
+	@OneToMany(() => OrderProduct, op => op.order)
 	orderProducts: OrderProduct[];
 
 	@Column({
@@ -38,7 +34,7 @@ export class Order extends Base {
 	@Column({ type: 'boolean', default: false })
 	is_activated: boolean;
 
-	@Column({ type: 'varchar', length: 6 })
+	@Column({ type: 'varchar', length: 6, nullable: true })
 	activation_code: string;
 
 	@Column({ type: 'float', nullable: true })

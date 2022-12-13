@@ -25,13 +25,13 @@ export class TokenService {
 		const accessToken = await this.jwtService.signAsync(
 			{ ...payload },
 			{
-				expiresIn: '30m',
+				expiresIn: '20m',
 			}
 		);
 		const refreshToken = await this.jwtService.signAsync(
 			{ ...payload },
 			{
-				expiresIn: '1m',
+				expiresIn: '10d',
 				secret: this.configService.get('JWT_SECRET_REFRESH'),
 			}
 		);
@@ -82,7 +82,7 @@ export class TokenService {
 		if (data) {
 			return data;
 		} else {
-			throw new NotFoundException('Токен не найден');
+			throw new UnauthorizedException('Не авторизован!');
 		}
 	}
 

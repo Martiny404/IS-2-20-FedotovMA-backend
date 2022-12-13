@@ -17,7 +17,11 @@ export class FileService {
 
 		const res: FileResponse[] = await Promise.all(
 			files.map(async (file): Promise<FileResponse> => {
-				const fileName = v4() + '.' + file.mimetype.split('/')[1];
+				const currentFileType = file.mimetype.split('/')[1];
+
+				const type = currentFileType == 'svg+xml' ? 'svg' : currentFileType;
+
+				const fileName = v4() + '.' + type;
 				try {
 					await writeFile(join(uploadFolder, fileName), file.buffer);
 				} catch (e) {

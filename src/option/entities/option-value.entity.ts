@@ -18,7 +18,11 @@ export class OptionValue {
 	@Column({ type: 'varchar' })
 	value: string;
 
-	@ManyToOne(() => Option, option => option.values)
+	@ManyToOne(() => Option, option => option.values, {
+		cascade: true,
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'option_id' })
 	option: Option;
 }
