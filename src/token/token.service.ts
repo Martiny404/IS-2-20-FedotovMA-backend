@@ -1,4 +1,5 @@
 import {
+	ForbiddenException,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
@@ -31,7 +32,7 @@ export class TokenService {
 		const refreshToken = await this.jwtService.signAsync(
 			{ ...payload },
 			{
-				expiresIn: '10d',
+				expiresIn: '7d',
 				secret: this.configService.get('JWT_SECRET_REFRESH'),
 			}
 		);
@@ -67,7 +68,7 @@ export class TokenService {
 			});
 			return data;
 		} catch (e) {
-			throw new UnauthorizedException('Не авторизован!');
+			throw new ForbiddenException('Срок действия токена перезаписи вышел!');
 		}
 	}
 

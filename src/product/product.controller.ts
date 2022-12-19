@@ -31,14 +31,13 @@ export class ProductController {
 		return product;
 	}
 
-	@CheckAuth('user')
 	@Get('/')
 	async getAll(@Query() query) {
-		const category = query.category;
-		const page = +query.page || 1;
-		const limit = +query.limit || 9;
+		const categoryId = query.categoryId ? +query.categoryId : undefined;
+		const brandId = query.brandId ? +query.brandId : undefined;
+		const page = query.page ? +query.page : undefined;
 
-		return await this.productService.all(category, page, limit);
+		return await this.productService.all(categoryId, page, brandId);
 	}
 
 	@Get('/info/:id')

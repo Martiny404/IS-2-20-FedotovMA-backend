@@ -155,7 +155,9 @@ export class OrderService {
 						brand: true,
 					},
 				},
-				user: true,
+				user: {
+					role: true,
+				},
 			},
 			select: {
 				is_activated: true,
@@ -164,6 +166,15 @@ export class OrderService {
 				total: true,
 				order_date: true,
 				orderStatus: true,
+				user: {
+					id: true,
+					email: true,
+					role: {
+						roleName: true,
+					},
+					createdAt: true,
+					isActivated: true,
+				},
 				orderProducts: {
 					product: {
 						brand: {
@@ -214,12 +225,51 @@ export class OrderService {
 		return true;
 	}
 
-	async removeOrder(userId: number, orderId: number) {
-		const order = await this.getOrder(userId, orderId);
+	async removeOrder(orderId: number) {
+		const order = await this.orderRepo.findOne({
+			where: {
+				id: orderId,
+			},
+			relations: {
+				orderProducts: {
+					product: true,
+				},
+			},
+		});
+
+		if (!order) {
+			throw new NotFoundException('Заказ не найден!');
+		}
+
 		await this.productService.returnSeveralProductsFromOrder(
 			order.orderProducts
 		);
 		await this.orderRepo.remove(order);
+		return true;
+	}
+
+	async changeStatus(orderId: number, status: OrderStatus) {
+		const order = await this.orderRepo.findOne({
+			where: { id: orderId },
+		});
+		if (!order) {
+			throw new NotFoundException('Заказ не найден!');
+		}
+		order.orderStatus = status;
+
+		await this.orderRepo.save(order);
+		return true;
+	}
+
+	async toggleActive(orderId: number) {
+		const order = await this.orderRepo.findOne({
+			where: { id: orderId },
+		});
+		if (!order) {
+			throw new NotFoundException('Заказ не найден!');
+		}
+		order.is_activated = !order.is_activated;
+		await this.orderRepo.save(order);
 		return true;
 	}
 

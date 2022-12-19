@@ -1,7 +1,6 @@
 import {
 	BadRequestException,
 	Injectable,
-	InternalServerErrorException,
 	NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -131,6 +130,26 @@ export class UserService {
 			relations: { product: { category: true, brand: true } },
 		});
 		return wishlist;
+	}
+
+	async getMe(userId: number) {
+		const user = await this.userRepo.findOne({
+			where: { id: userId },
+			relations: {
+				orders: {
+					orderProducts: {
+						product: {
+							category: true,
+							brand: true,
+						},
+					},
+				},
+			},
+		});
+		if (!user) {
+			throw new NotFoundException('Пользователь не найден!');
+		}
+		return user;
 	}
 
 	async getUserBasket(userId: number) {

@@ -4,6 +4,7 @@ import {
 	Delete,
 	Get,
 	Param,
+	Patch,
 	Post,
 	Req,
 	UseFilters,
@@ -11,6 +12,7 @@ import {
 import { CheckAuth } from 'src/decorators/auth.decorator';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { ActivateOrderDto } from './dto/activate-order.dto';
+import { ChangeStatusDto } from './dto/change-status.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
 
@@ -61,9 +63,20 @@ export class OrderController {
 
 	@CheckAuth('admin', true)
 	@Delete('/remove/:id')
-	async removeOrder(@Param('id') id: string, @Req() req) {
-		const userId = req.user.id;
-		return this.orderService.removeOrder(userId, +id);
+	async removeOrder(@Param('id') id: string) {
+		return this.orderService.removeOrder(+id);
+	}
+
+	@CheckAuth('admin', true)
+	@Patch('/change-status/:id')
+	async changeStatus(@Param('id') id: string, @Body() dto: ChangeStatusDto) {
+		return this.orderService.changeStatus(+id, dto.status);
+	}
+
+	@CheckAuth('admin', true)
+	@Patch('/toggle-active/:id')
+	async toggleActive(@Param('id') id: string) {
+		return this.orderService.toggleActive(+id);
 	}
 
 	@CheckAuth('user', true)

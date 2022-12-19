@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { OptionService } from 'src/option/option.service';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
+import { IFilter } from 'src/types/producr-filter.types';
 import { UserService } from 'src/user/user.service';
 import { MoreThan, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
@@ -112,26 +113,24 @@ export class ProductService {
 	}
 
 	async all(
-		category: string,
-		page: number,
-		limit: number,
-		brands: number[] = []
+		categoryId?: number,
+		page: number = 1,
+		brandId?: number,
+		filters: IFilter[] = []
 	) {
-		let offset = page * limit - limit;
-
-		const filters = [
-			{ key: 'ram', value: ['8gb'] },
-			{ key: 'hdd', value: ['256gb', '512gb'] },
-		];
+		let offset = page * 9 - 9;
 
 		const p = this.productRepo
 			.createQueryBuilder('p')
 			.innerJoinAndSelect('p.category', 'c')
-			.innerJoinAndSelect('p.brand', 'b')
-			.where('c.name = :name', { name: category });
+			.innerJoinAndSelect('p.brand', 'b');
 
-		if (brands.length > 0) {
-			p.andWhere('b.id IN (:...brands)', { brands });
+		if (categoryId) {
+			p.where('c.id = :id', { id: categoryId });
+		}
+
+		if (brandId) {
+			p.where('b.id = :id', { id: brandId });
 		}
 
 		for (const filter of filters) {
@@ -139,6 +138,7 @@ export class ProductService {
 			p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
 		}
 		p.offset(offset);
+		p.limit(9);
 
 		const response = await p.getManyAndCount();
 		return {

@@ -30,7 +30,7 @@ export class AuthController {
 		);
 		res.cookie('refreshToken', user.refreshToken, {
 			httpOnly: true,
-			maxAge: 900000,
+			maxAge: 604800000,
 		});
 		return res.json(user);
 	}
@@ -39,7 +39,7 @@ export class AuthController {
 		const user = await this.authService.login(userDto.email, userDto.password);
 		res.cookie('refreshToken', user.refreshToken, {
 			httpOnly: true,
-			maxAge: 900000,
+			maxAge: 604800000,
 		});
 		return res.status(200).json(user);
 	}
@@ -63,7 +63,7 @@ export class AuthController {
 		const userData = await this.authService.refresh(refreshToken);
 		res.cookie('refreshToken', userData.refreshToken, {
 			httpOnly: true,
-			maxAge: 900000,
+			maxAge: 604800000,
 		});
 		return res.status(200).json(userData);
 	}

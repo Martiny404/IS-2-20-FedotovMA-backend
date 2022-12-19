@@ -27,6 +27,13 @@ export class UserController {
 		return this.userService.getAll();
 	}
 
+	@CheckAuth('user')
+	@Get('/me')
+	async getMe(@Req() req) {
+		const userId = req.user.id;
+		return this.userService.getMe(userId);
+	}
+
 	@CheckAuth('user', true)
 	@Get('/get-validation-code')
 	async getValidationCode(@Req() req) {
