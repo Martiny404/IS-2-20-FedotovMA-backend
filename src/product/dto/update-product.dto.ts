@@ -18,6 +18,15 @@ export class updateProductDto {
 	status: ProductStatus;
 
 	@IsOptional()
+	@IsString()
+	description: string;
+
+	@IsOptional()
+	@IsNumber()
+	@IsPositive()
+	inStock: number;
+
+	@IsOptional()
 	@IsNumber()
 	@IsPositive()
 	@Max(120_000_00000)

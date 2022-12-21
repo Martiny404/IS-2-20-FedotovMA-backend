@@ -1,10 +1,12 @@
 import {
 	IsArray,
 	IsNumber,
+	IsOptional,
 	IsPositive,
 	IsString,
 	Length,
 	Max,
+	Min,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -27,4 +29,16 @@ export class CreateProductDto {
 
 	@IsString()
 	poster: string;
+
+	@IsNumber()
+	@IsPositive()
+	inStock: number;
+
+	@IsNumber()
+	@Min(0)
+	@Max(99)
+	discount_percentage: number;
+
+	@IsString()
+	description: string;
 }

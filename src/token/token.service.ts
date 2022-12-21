@@ -1,7 +1,6 @@
 import {
 	ForbiddenException,
 	Injectable,
-	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

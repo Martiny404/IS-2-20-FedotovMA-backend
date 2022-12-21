@@ -19,7 +19,7 @@ export class Product extends Base {
 	@Column({ type: 'varchar', unique: true })
 	name: string;
 
-	@Column({ type: 'int', name: 'in_stock', default: 10 })
+	@Column({ type: 'int', name: 'in_stock' })
 	inStock: number;
 
 	@Column({ type: 'int', default: 0 })
@@ -31,7 +31,7 @@ export class Product extends Base {
 	@Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.ON_SALE })
 	status: ProductStatus;
 
-	@Column({ type: 'boolean', default: true })
+	@Column({ type: 'boolean', default: false })
 	hidden: boolean;
 
 	@Column({ type: 'float' })
@@ -67,13 +67,9 @@ export class Product extends Base {
 	@OneToMany(() => Basket, basket => basket.product)
 	baskets: Basket[];
 
-	@OneToMany(() => OrderProduct, op => op.product, {
-		cascade: true,
-		onDelete: 'CASCADE',
-		onUpdate: 'CASCADE',
-	})
+	@OneToMany(() => OrderProduct, op => op.product)
 	productOrders: OrderProduct[];
 
 	@Column({ type: 'jsonb', default: {} })
-	options: Object & Record<string, string | number | boolean>;
+	options: JSON;
 }

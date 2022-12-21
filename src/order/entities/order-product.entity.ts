@@ -21,7 +21,11 @@ export class OrderProduct {
 	@JoinColumn({ name: 'order_id' })
 	order: Order;
 
-	@ManyToOne(() => Product, product => product.productOrders)
+	@ManyToOne(() => Product, product => product.productOrders, {
+		cascade: true,
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	@JoinColumn({ name: 'product_id' })
 	product: Product;
 

@@ -24,6 +24,7 @@ import { ProductService } from './product.service';
 @Controller('product')
 export class ProductController {
 	constructor(private readonly productService: ProductService) {}
+
 	@CheckAuth('admin', true)
 	@Post('/')
 	async create(@Body() dto: CreateProductDto) {
@@ -36,8 +37,9 @@ export class ProductController {
 		const categoryId = query.categoryId ? +query.categoryId : undefined;
 		const brandId = query.brandId ? +query.brandId : undefined;
 		const page = query.page ? +query.page : undefined;
+		const filters = query.filters ? JSON.parse(query.filters) : [];
 
-		return await this.productService.all(categoryId, page, brandId);
+		return await this.productService.all(categoryId, page, brandId, filters);
 	}
 
 	@Get('/info/:id')

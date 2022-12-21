@@ -8,7 +8,7 @@ import { OptionService } from 'src/option/option.service';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { IFilter } from 'src/types/producr-filter.types';
 import { UserService } from 'src/user/user.service';
-import { MoreThan, Repository } from 'typeorm';
+import { FindOperator, In, MoreThan, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
@@ -38,11 +38,9 @@ export class ProductService {
 		}
 
 		const newProduct = this.productRepo.create({
-			name: dto.name,
-			price: dto.price,
 			brand: { id: dto.brandId },
 			category: { id: dto.categoryId },
-			poster: dto.poster,
+			...dto,
 		});
 
 		return await this.productRepo.save(newProduct);
@@ -80,6 +78,20 @@ export class ProductService {
 			}
 		}
 		return this.productRepo.save(product);
+	}
+
+	async deleteImage(productId: number, imageId: number) {
+		const image = await this.productImgRepo.findOne({
+			where: {
+				id: imageId,
+				product: { id: productId },
+			},
+		});
+		if (!image) {
+			throw new NotFoundException('Фото нету!');
+		}
+		await this.productImgRepo.remove(image);
+		return true;
 	}
 
 	async reduceQuantity(id: number, q: number) {
@@ -123,7 +135,9 @@ export class ProductService {
 		const p = this.productRepo
 			.createQueryBuilder('p')
 			.innerJoinAndSelect('p.category', 'c')
-			.innerJoinAndSelect('p.brand', 'b');
+			.innerJoinAndSelect('p.brand', 'b')
+			.innerJoinAndSelect('p.rating', 'r')
+			.innerJoinAndSelect('p.productOrders', 'op');
 
 		if (categoryId) {
 			p.where('c.id = :id', { id: categoryId });
@@ -141,9 +155,26 @@ export class ProductService {
 		p.limit(9);
 
 		const response = await p.getManyAndCount();
+
+		const product = response[0].map(p => {
+			const r = {
+				...p,
+				rating: p.rating.reduce((acc, v) => {
+					return acc + v.rate;
+				}, 0),
+			};
+			return {
+				...r,
+				rating: r.rating / p.rating.length,
+				productOrders: r.productOrders.length,
+			};
+		});
+
+		//[{"key": "hdd", "value": ["512gb"]}]
+
 		return {
 			count: response[1],
-			products: response[0],
+			products: product,
 		};
 	}
 
@@ -153,36 +184,24 @@ export class ProductService {
 			relations: {
 				category: true,
 				brand: true,
+				rating: true,
+				productOrders: true,
 				images: true,
-			},
-			select: {
-				options: {},
-				id: true,
-				name: true,
-				discount_percentage: true,
-				price: true,
-				inStock: true,
-				status: true,
-				description: true,
-				poster: true,
-				category: {
-					id: true,
-					name: true,
-				},
-				brand: {
-					id: true,
-					name: true,
-				},
 			},
 		});
 		if (!product) {
 			throw new NotFoundException('Продукт не найден!');
 		}
-		const rate = await this.getAverageRate(product.id);
+
+		const rating = product.rating.reduce((acc, v) => {
+			return acc + v.rate;
+		}, 0);
+		const count = product.productOrders.length;
 
 		return {
 			...product,
-			rate,
+			rating: rating,
+			productOrders: count,
 		};
 	}
 
