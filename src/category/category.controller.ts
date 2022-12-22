@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Param, Post, UseFilters } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Patch,
+	Post,
+	UseFilters,
+} from '@nestjs/common';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { CategoryService } from './category.service';
 import { AddOptionDto } from './dto/add-option.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @UseFilters(HttpExceptionFilter)
 @Controller('category')
@@ -13,6 +23,16 @@ export class CategoryController {
 	async create(@Body() dto: CreateCategoryDto) {
 		const category = await this.categoryService.create(dto);
 		return category;
+	}
+
+	@Patch('/update/:id')
+	async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+		return this.categoryService.update(+id, dto);
+	}
+
+	@Delete('/remove/:id')
+	async remove(@Param('id') id: string) {
+		return this.categoryService.remove(+id);
 	}
 
 	@Get('/all')

@@ -8,6 +8,7 @@ import { OptionService } from 'src/option/option.service';
 import { Repository } from 'typeorm';
 import { Category } from './category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -33,6 +34,33 @@ export class CategoryService {
 			categoryImgPath,
 		});
 		return await this.categoryRepo.save(category);
+	}
+
+	async update(categoryId: number, dto: UpdateCategoryDto) {
+		const category = await this.categoryRepo.findOne({
+			where: { id: categoryId },
+		});
+
+		if (!category) {
+			throw new NotFoundException('Категории не существует!');
+		}
+
+		return this.categoryRepo.save({
+			...category,
+			...dto,
+		});
+	}
+
+	async remove(id: number) {
+		const category = await this.categoryRepo.findOne({
+			where: { id },
+		});
+		if (!category) {
+			throw new NotFoundException('Категории не существует!');
+		}
+
+		await this.categoryRepo.remove(category);
+		return true;
 	}
 
 	async byName(categoryName: string) {

@@ -8,6 +8,7 @@ import { CategoryService } from 'src/category/category.service';
 import { Repository } from 'typeorm';
 import { Brand } from './brand.entity';
 import { CreateBrandDto } from './dto/create-brand.dto';
+import { UpdateBrandDto } from './dto/update-brand.dto';
 
 @Injectable()
 export class BrandService {
@@ -34,6 +35,33 @@ export class BrandService {
 			brandImgPath,
 		});
 		return await this.brandRepo.save(brand);
+	}
+
+	async update(brandId: number, dto: UpdateBrandDto) {
+		const brand = await this.brandRepo.findOne({
+			where: { id: brandId },
+		});
+
+		if (!brand) {
+			throw new NotFoundException('Бренда не существует!');
+		}
+
+		return this.brandRepo.save({
+			...brand,
+			...dto,
+		});
+	}
+
+	async remove(id: number) {
+		const brand = await this.brandRepo.findOne({
+			where: { id },
+		});
+		if (!brand) {
+			throw new NotFoundException('Бренда не существует!');
+		}
+
+		await this.brandRepo.remove(brand);
+		return true;
 	}
 
 	async addCategory(id: number, categoryId: number) {

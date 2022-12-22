@@ -101,13 +101,8 @@ export class ProductController {
 
 	@CheckAuth('admin', true)
 	@Patch('/update/:id')
-	async update(
-		@Param('id') id: string,
-		@Body() dto: updateProductDto,
-		@Res() res: Response
-	) {
-		const prod = await this.productService.update(+id, dto);
-		res.status(200).json(prod);
+	async update(@Param('id') id: string, @Body() dto: updateProductDto) {
+		return this.productService.update(+id, dto);
 	}
 
 	@Get('/with-discount/:categoryId')
