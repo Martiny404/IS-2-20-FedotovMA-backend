@@ -57,9 +57,21 @@ export class ProductController {
 	}
 
 	@CheckAuth('admin', true)
+	@Delete('/remove/:id')
+	async deleteProduct(@Param('id') id: string) {
+		return this.productService.deleteProduct(+id);
+	}
+
+	@CheckAuth('admin', true)
 	@Patch('/add-img/:id')
 	async addImage(@Param('id') id: string, @Body('path') path: string) {
 		return this.productService.addImage(path, +id);
+	}
+
+	@CheckAuth('admin', true)
+	@Delete('/remove-img/:id')
+	async removeImage(@Param('id') id: string) {
+		return this.productService.deleteImage(+id);
 	}
 
 	@CheckAuth('admin', true)

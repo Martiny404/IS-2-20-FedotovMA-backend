@@ -43,11 +43,7 @@ export class Product extends Base {
 	@Column({ type: 'varchar', nullable: true })
 	poster: string;
 
-	@OneToMany(() => ProductImages, productImages => productImages.product, {
-		cascade: true,
-		onUpdate: 'CASCADE',
-		onDelete: 'CASCADE',
-	})
+	@OneToMany(() => ProductImages, productImages => productImages.product)
 	images: ProductImages[];
 
 	@ManyToOne(() => Category, category => category.products)

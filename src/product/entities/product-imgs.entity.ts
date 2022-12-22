@@ -15,7 +15,11 @@ export class ProductImages {
 	@Column({ type: 'varchar', nullable: true, name: 'photo' })
 	photo: string;
 
-	@ManyToOne(() => Product, product => product.images)
+	@ManyToOne(() => Product, product => product.images, {
+		cascade: true,
+		onUpdate: 'CASCADE',
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'product_id' })
 	product: Product;
 }

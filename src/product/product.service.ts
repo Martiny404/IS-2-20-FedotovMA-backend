@@ -46,6 +46,15 @@ export class ProductService {
 		return await this.productRepo.save(newProduct);
 	}
 
+	async deleteProduct(productId: number) {
+		const product = await this.byId(productId);
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		await this.productRepo.remove(product);
+		return true;
+	}
+
 	async addOptions(id: number, dto: addOptionsToProductDto) {
 		const product = await this.productRepo.findOne({
 			where: { id },
@@ -80,11 +89,10 @@ export class ProductService {
 		return this.productRepo.save(product);
 	}
 
-	async deleteImage(productId: number, imageId: number) {
+	async deleteImage(imageId: number) {
 		const image = await this.productImgRepo.findOne({
 			where: {
 				id: imageId,
-				product: { id: productId },
 			},
 		});
 		if (!image) {
@@ -205,7 +213,7 @@ export class ProductService {
 		};
 	}
 
-	async addImage(path: string, productId) {
+	async addImage(path: string, productId: number) {
 		const product = await this.productRepo.findOne({
 			where: { id: productId },
 			relations: { images: true },
@@ -217,8 +225,7 @@ export class ProductService {
 			photo: path,
 			product: { id: product.id },
 		});
-		product.images = [...product.images, img];
-		return this.productRepo.save(product);
+		return this.productImgRepo.save(img);
 	}
 
 	async toggleHidden(id: number) {
