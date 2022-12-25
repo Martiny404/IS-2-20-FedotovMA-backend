@@ -1,10 +1,12 @@
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
-export class CreateOffer {
+export class UpdateOfferDto {
+	@IsOptional()
 	@IsNumber()
 	@IsPositive()
 	categoryId: number;
 
+	@IsOptional()
 	@IsNumber()
 	@IsPositive()
 	brandId: number;
@@ -13,9 +15,11 @@ export class CreateOffer {
 	@IsString()
 	description: string;
 
+	@IsOptional()
 	@IsString()
 	endDate: string;
 
+	@IsOptional()
 	@IsString()
 	photo: string;
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OptionValue } from './entities/option-value.entity';
 import { Repository } from 'typeorm';
@@ -12,6 +16,14 @@ export class OptionService {
 		@InjectRepository(OptionValue)
 		private readonly optionValueRepo: Repository<OptionValue>
 	) {}
+
+	async getAll() {
+		return this.optionRepo.find({
+			relations: {
+				values: true,
+			},
+		});
+	}
 
 	async create(opt: CreateOptionDto) {
 		const isOptExist = await this.optionRepo.findOne({
@@ -32,11 +44,12 @@ export class OptionService {
 
 		const optionValue = this.optionValueRepo.create({
 			value,
+			option: {
+				id: option.id,
+			},
 		});
 
-		option.values = [...option.values, optionValue];
-
-		return await this.optionRepo.save(option);
+		return await this.optionValueRepo.save(optionValue);
 	}
 
 	async getByIds(valuesIds: number[]) {
@@ -57,7 +70,27 @@ export class OptionService {
 			},
 		});
 
-		if (!option) throw new BadRequestException('Опции не существует!');
+		if (!option) throw new NotFoundException('Опции не существует!');
 		return option;
+	}
+
+	async removeOption(id: number) {
+		const option = await this.byId(id);
+
+		await this.optionRepo.remove(option);
+		return true;
+	}
+
+	async removeValue(id: number) {
+		const value = await this.optionValueRepo.findOne({
+			where: {
+				id,
+			},
+		});
+		if (!value) {
+			throw new NotFoundException('Значения не существует!');
+		}
+		await this.optionValueRepo.remove(value);
+		return true;
 	}
 }

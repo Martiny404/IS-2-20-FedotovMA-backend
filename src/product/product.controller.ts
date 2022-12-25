@@ -39,6 +39,8 @@ export class ProductController {
 		const page = query.page ? +query.page : undefined;
 		const filters = query.filters ? JSON.parse(query.filters) : [];
 
+		//console.log(filters);
+
 		return await this.productService.all(categoryId, page, brandId, filters);
 	}
 

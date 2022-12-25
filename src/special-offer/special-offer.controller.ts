@@ -1,6 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Patch,
+	Post,
+} from '@nestjs/common';
 import { CheckAuth } from 'src/decorators/auth.decorator';
 import { CreateOffer } from './dto/create-offer.dto';
+import { UpdateOfferDto } from './dto/update-offer.dto';
 import { SpecialOfferService } from './special-offer.service';
 
 @Controller('special-offer')
@@ -11,6 +20,12 @@ export class SpecialOfferController {
 	@Post('/')
 	async create(@Body() dto: CreateOffer) {
 		return this.specialOfferService.create(dto);
+	}
+
+	@CheckAuth('admin', true)
+	@Patch('/edit/:id')
+	async edit(@Param('id') id: string, @Body() dto: UpdateOfferDto) {
+		return this.specialOfferService.update(+id, dto);
 	}
 
 	@Get('/')

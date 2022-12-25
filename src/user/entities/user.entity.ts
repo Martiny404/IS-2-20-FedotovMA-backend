@@ -14,6 +14,9 @@ export class User extends Base {
 	@Column({ type: 'varchar' })
 	password: string;
 
+	@Column({ type: 'varchar', nullable: true })
+	avatar: string;
+
 	@Column({ type: 'boolean', name: 'is_activated', default: false })
 	isActivated: boolean;
 	@Column({ type: 'varchar', name: 'activation_link', nullable: true })

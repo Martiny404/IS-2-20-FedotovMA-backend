@@ -24,9 +24,6 @@ export class SpecialOffer extends Base {
 	@JoinColumn({ name: 'brand_id' })
 	brand: Brand;
 
-	@Column({ default: 0, type: 'int' })
-	discount: number;
-
 	@Column({ nullable: true, type: 'varchar' })
 	description: string;
 

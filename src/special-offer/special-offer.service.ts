@@ -4,6 +4,7 @@ import { BrandService } from 'src/brand/brand.service';
 import { CategoryService } from 'src/category/category.service';
 import { Repository } from 'typeorm';
 import { CreateOffer } from './dto/create-offer.dto';
+import { UpdateOfferDto } from './dto/update-offer.dto';
 import { SpecialOffer } from './special-offer.entity';
 
 @Injectable()
@@ -25,6 +26,39 @@ export class SpecialOfferService {
 		});
 
 		return this.specialOfferRepo.save(offer);
+	}
+
+	async update(offerId: number, dto: UpdateOfferDto) {
+		const offer = await this.specialOfferRepo.findOne({
+			where: {
+				id: offerId,
+			},
+			relations: {
+				category: true,
+				brand: true,
+			},
+		});
+		if (!offer) {
+			throw new NotFoundException('Акция не найдена!');
+		}
+
+		if (dto.brandId) {
+			offer.brand.id = dto.brandId;
+		}
+		if (dto.categoryId) {
+			offer.category.id = dto.categoryId;
+		}
+		if (dto.description) {
+			offer.description = dto.description;
+		}
+		if (dto.endDate) {
+			offer.endDate = dto.endDate;
+		}
+		if (dto.photo) {
+			offer.photo = dto.photo;
+		}
+		await this.specialOfferRepo.save(offer);
+		return true;
 	}
 
 	async getFreshOffers() {

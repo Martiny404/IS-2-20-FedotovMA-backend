@@ -46,11 +46,19 @@ export class Product extends Base {
 	@OneToMany(() => ProductImages, productImages => productImages.product)
 	images: ProductImages[];
 
-	@ManyToOne(() => Category, category => category.products)
+	@ManyToOne(() => Category, category => category.products, {
+		cascade: true,
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	@JoinColumn({ name: 'category_id' })
 	category: Category;
 
-	@ManyToOne(() => Brand, brand => brand.products)
+	@ManyToOne(() => Brand, brand => brand.products, {
+		cascade: true,
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	@JoinColumn({ name: 'brand_id' })
 	brand: Brand;
 
@@ -63,7 +71,7 @@ export class Product extends Base {
 	@OneToMany(() => Basket, basket => basket.product)
 	baskets: Basket[];
 
-	@OneToMany(() => OrderProduct, op => op.product)
+	@OneToMany(() => OrderProduct, op => op.product, {})
 	productOrders: OrderProduct[];
 
 	@Column({ type: 'jsonb', default: {} })

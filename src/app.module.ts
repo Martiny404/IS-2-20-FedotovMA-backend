@@ -18,6 +18,7 @@ import { OrderModule } from './order/order.module';
 import { TokenModule } from './token/token.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { SpecialOfferModule } from './special-offer/special-offer.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
 	imports: [
@@ -42,6 +43,7 @@ import { SpecialOfferModule } from './special-offer/special-offer.module';
 		TokenModule,
 		StatisticsModule,
 		SpecialOfferModule,
+		PostsModule,
 	],
 	controllers: [],
 	providers: [],

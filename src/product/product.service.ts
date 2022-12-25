@@ -142,10 +142,10 @@ export class ProductService {
 
 		const p = this.productRepo
 			.createQueryBuilder('p')
-			.innerJoinAndSelect('p.category', 'c')
-			.innerJoinAndSelect('p.brand', 'b')
-			.innerJoinAndSelect('p.rating', 'r')
-			.innerJoinAndSelect('p.productOrders', 'op');
+			.leftJoinAndSelect('p.category', 'c')
+			.leftJoinAndSelect('p.brand', 'b')
+			.leftJoinAndSelect('p.rating', 'r')
+			.leftJoinAndSelect('p.productOrders', 'op');
 
 		if (categoryId) {
 			p.where('c.id = :id', { id: categoryId });
@@ -157,6 +157,7 @@ export class ProductService {
 
 		for (const filter of filters) {
 			const values = filter.value.map(v => `'${v}'`).join();
+			console.log(values, filter.key);
 			p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
 		}
 		p.offset(offset);
@@ -173,12 +174,12 @@ export class ProductService {
 			};
 			return {
 				...r,
-				rating: r.rating / p.rating.length,
+				rating: r.rating ? r.rating / p.rating.length : 0,
 				productOrders: r.productOrders.length,
 			};
 		});
 
-		//[{"key": "hdd", "value": ["512gb"]}]
+		//[{"key": "hdd", "value": ["256gb"]}]
 
 		return {
 			count: response[1],

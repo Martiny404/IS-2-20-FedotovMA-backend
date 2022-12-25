@@ -15,4 +15,8 @@ export class updateUserInfoDto {
 	@IsString()
 	@Length(6, 6)
 	readonly code: string;
+
+	@IsString()
+	@IsOptional()
+	avatar: string;
 }

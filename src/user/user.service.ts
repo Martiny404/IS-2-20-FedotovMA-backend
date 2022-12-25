@@ -76,6 +76,10 @@ export class UserService {
 				const passwordHash = await hash(dto.password, 5);
 				user.password = passwordHash;
 			}
+			if (dto.avatar) {
+				user.avatar = dto.avatar;
+			}
+			await this.userRepo.save(user);
 			return true;
 		}
 		return false;

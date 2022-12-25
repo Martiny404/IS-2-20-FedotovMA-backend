@@ -74,10 +74,8 @@ export class CategoryService {
 		const category = await this.categoryRepo.findOne({
 			where: { id },
 			relations: {
-				brands: true,
 				options: true,
-				products: true,
-				offers: true,
+				brands: true,
 			},
 		});
 		if (!category) {
@@ -89,15 +87,42 @@ export class CategoryService {
 	async addOption(categoryId: number, optionId: number) {
 		const option = await this.optionService.byId(optionId);
 
-		const category = await this.byId(categoryId);
+		const category = await this.categoryRepo.findOne({
+			where: { id: categoryId },
+			relations: {
+				options: true,
+			},
+		});
+		if (!category) {
+			throw new NotFoundException('Категории не существует!');
+		}
 
 		category.options = [...category.options, option];
 
 		return this.categoryRepo.save(category);
 	}
 
+	async removeOption(categoryId: number, optionId: number) {
+		const option = await this.optionService.byId(optionId);
+
+		const category = await this.categoryRepo.findOne({
+			where: { id: categoryId },
+			relations: {
+				options: true,
+			},
+		});
+		if (!category) {
+			throw new NotFoundException('Категории не существует!');
+		}
+		const newOptions = category.options.filter(op => op.id != option.id);
+
+		category.options = newOptions;
+		await this.categoryRepo.save(category);
+		return true;
+	}
+
 	async getAllOptions(categoryId: number) {
-		return await this.categoryRepo.find({
+		return await this.categoryRepo.findOne({
 			where: {
 				id: categoryId,
 			},

@@ -3,44 +3,40 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { Order } from 'src/order/entities/order.entity';
 import { Product } from 'src/product/entities/product.entity';
-import { ProductService } from 'src/product/product.service';
-
 import { DateFilter } from 'src/types/dateFilter.type';
 import { Between, Repository } from 'typeorm';
 
 @Injectable()
 export class StatisticsService {
 	constructor(
-		@InjectRepository(OrderProduct)
-		private readonly orderProductRepo: Repository<OrderProduct>,
-		@InjectRepository(Order) private readonly orderRepo: Repository<Order>,
+		@InjectRepository(Order)
+		private readonly orderRepo: Repository<Order>,
 		@InjectRepository(Product) private readonly productRepo: Repository<Product>
 	) {}
 
 	async countOrdersProducts(category?: string, brand?: string) {
-		let queryString = `SELECT DISTINCT ON (product.id)  product.name as product_name, product.in_stock, product.poster, product.price, product.description,product."options", product.discount_percentage, product.id as id,  brand.name as brand_name, category.name as category_name, count(order_product.product_id)AS c, AVG(rating.rate) as rating FROM product
-		INNER JOIN order_product on order_product.product_id = product.id
-		INNER JOIN brand on brand."id" = product.brand_id
-		INNER JOIN rating on product."id" = rating.product_id
-		INNER JOIN category on category."id" = product.category_id
-		GROUP BY product.id, category.id, brand.id, rating.id`;
-
+		let queryString = `
+		SELECT product.name as product_name, product.status as product_status, product.updated_at, product.created_at, product.views, product.in_stock, product.poster, product.price, product.description,product."options", product.discount_percentage, product.id as id,  brand.name as brand_name, category.name as category_name, brand.id as brand_id, category.id as category_id, count(order_product.product_id)AS c, AVG(rating.rate) as rating FROM product
+		LEFT JOIN order_product on order_product.product_id = product.id
+		LEFT JOIN brand on brand."id" = product.brand_id
+		LEFT JOIN rating on product."id" = rating.product_id
+		LEFT JOIN category on category."id" = product.category_id
+		GROUP BY product.id, category.id, brand.id, rating.id
+	 ORDER BY C DESC
+		`;
 		if (category && !brand) {
 			queryString += ` HAVING category.name = ${category};`;
 		}
 		if (!category && brand) {
 			queryString += ` HAVING brand.name = ${brand};`;
 		}
-
 		if (brand && category) {
 			queryString += `	HAVING brand.name = ${brand} AND  category.name = ${category}`;
 		}
-
 		queryString += ' LIMIT 9';
-
 		const q = await this.productRepo.query(queryString);
-
-		return q.sort((a: any, b: any) => b.c - a.c);
+		//return q.sort((a: any, b: any) => b.c - a.c);
+		return q;
 	}
 
 	async getOrdersByDateRange(start?: string, end?: string) {

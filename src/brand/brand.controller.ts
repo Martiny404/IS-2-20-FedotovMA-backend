@@ -28,6 +28,11 @@ export class BrandController {
 		return this.brandService.byId(+id);
 	}
 
+	@Get('/info/:id')
+	async getBrandInfo(@Param('id') id: string) {
+		return this.brandService.getBrandInfo(+id);
+	}
+
 	@Post('/')
 	async create(@Body() dto: CreateBrandDto) {
 		return await this.brandService.create(dto);
