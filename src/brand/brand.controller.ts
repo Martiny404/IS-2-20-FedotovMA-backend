@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { BrandService } from './brand.service';
-import { AddCategoryDto } from './dto/add-categories.dto';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 
@@ -48,8 +47,19 @@ export class BrandController {
 		return this.brandService.remove(+id);
 	}
 
-	@Patch('/add-category')
-	async addCategories(@Body() dto: AddCategoryDto) {
-		return this.brandService.addCategory(dto.brandId, dto.categoryId);
+	@Patch('/add-category/:id')
+	async addCategories(
+		@Param('id') id: string,
+		@Body('categoryId') categoryId: number
+	) {
+		return this.brandService.addCategory(+id, categoryId);
+	}
+
+	@Patch('/remove-category-brand/:id')
+	async removeCategoryBrand(
+		@Param('id') id: string,
+		@Body('categoryId') categoryId: number
+	) {
+		return this.brandService.removeCategory(+id, categoryId);
 	}
 }

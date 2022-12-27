@@ -75,7 +75,6 @@ export class CategoryService {
 			where: { id },
 			relations: {
 				options: true,
-				brands: true,
 			},
 		});
 		if (!category) {
@@ -95,6 +94,11 @@ export class CategoryService {
 		});
 		if (!category) {
 			throw new NotFoundException('Категории не существует!');
+		}
+		const isExist = category.options.find(op => op.id == option.id);
+
+		if (isExist) {
+			throw new BadRequestException('Эта характеристика уже есть!');
 		}
 
 		category.options = [...category.options, option];

@@ -7,7 +7,6 @@ import {
 	Entity,
 	JoinTable,
 	ManyToMany,
-	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -41,6 +40,5 @@ export class Category {
 	@ManyToMany(() => Brand, brand => brand.categories, {
 		onDelete: 'CASCADE',
 	})
-	@JoinTable()
 	brands: Brand[];
 }

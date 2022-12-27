@@ -20,7 +20,7 @@ import { RateProductDto } from './dto/rate-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
 import { ProductService } from './product.service';
 
-@UseFilters(HttpExceptionFilter)
+//@UseFilters(HttpExceptionFilter)
 @Controller('product')
 export class ProductController {
 	constructor(private readonly productService: ProductService) {}
@@ -39,9 +39,12 @@ export class ProductController {
 		const page = query.page ? +query.page : undefined;
 		const filters = query.filters ? JSON.parse(query.filters) : [];
 
-		//console.log(filters);
-
 		return await this.productService.all(categoryId, page, brandId, filters);
+	}
+
+	@Get('/search')
+	async search(@Query('searchTerm') searchTerm: string) {
+		return this.productService.search(searchTerm);
 	}
 
 	@Get('/info/:id')
@@ -50,7 +53,7 @@ export class ProductController {
 	}
 
 	@CheckAuth('admin', true)
-	@Patch('/:id')
+	@Patch('/add-option/:id')
 	async addOptions(
 		@Param('id') id: string,
 		@Body() dto: addOptionsToProductDto
@@ -84,9 +87,9 @@ export class ProductController {
 	}
 
 	@CheckAuth('admin', true)
-	@Delete('/delete-options/:id')
-	async deleteOptions(@Param('id') id: string, @Body('keys') keys: string[]) {
-		return this.productService.deleteOptions(+id, keys);
+	@Patch('/delete-options/:id')
+	async deleteOptions(@Param('id') id: string, @Body('key') key: string) {
+		return this.productService.deleteOptions(+id, key);
 	}
 
 	@CheckAuth('user', true)

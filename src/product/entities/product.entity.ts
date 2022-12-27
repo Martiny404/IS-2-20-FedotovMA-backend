@@ -37,10 +37,10 @@ export class Product extends Base {
 	@Column({ type: 'float' })
 	price: number;
 
-	@Column({ type: 'int', nullable: true })
+	@Column({ type: 'int' })
 	discount_percentage: number;
 
-	@Column({ type: 'varchar', nullable: true })
+	@Column({ type: 'varchar' })
 	poster: string;
 
 	@OneToMany(() => ProductImages, productImages => productImages.product)

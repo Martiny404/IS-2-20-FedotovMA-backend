@@ -8,7 +8,7 @@ import { OptionService } from 'src/option/option.service';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { IFilter } from 'src/types/producr-filter.types';
 import { UserService } from 'src/user/user.service';
-import { FindOperator, In, MoreThan, Repository } from 'typeorm';
+import { FindOperator, ILike, In, MoreThan, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
@@ -46,6 +46,30 @@ export class ProductService {
 		return await this.productRepo.save(newProduct);
 	}
 
+	async search(searchTerm: string) {
+		const products = await this.productRepo.find({
+			where: [
+				{ name: ILike(`%${searchTerm}%`) },
+				{
+					category: {
+						name: ILike(`%${searchTerm}%`),
+					},
+				},
+				{
+					brand: {
+						name: ILike(`%${searchTerm}%`),
+					},
+				},
+			],
+			relations: {
+				category: true,
+				brand: true,
+			},
+			take: 6,
+		});
+		return products;
+	}
+
 	async deleteProduct(productId: number) {
 		const product = await this.byId(productId);
 		if (!product) {
@@ -76,16 +100,16 @@ export class ProductService {
 		return product;
 	}
 
-	async deleteOptions(id: number, keys: string[]) {
+	async deleteOptions(id: number, key: string) {
 		const product = await this.byId(id);
 		if (!product) {
 			throw new NotFoundException('Продукт не найден!');
 		}
-		for (const key of keys) {
-			if ((product.options as Object).hasOwnProperty(key)) {
-				delete product.options[key];
-			}
+
+		if ((product.options as Object).hasOwnProperty(key)) {
+			delete product.options[key];
 		}
+
 		return this.productRepo.save(product);
 	}
 
@@ -157,7 +181,6 @@ export class ProductService {
 
 		for (const filter of filters) {
 			const values = filter.value.map(v => `'${v}'`).join();
-			console.log(values, filter.key);
 			p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
 		}
 		p.offset(offset);

@@ -4,6 +4,7 @@ import { SpecialOffer } from 'src/special-offer/special-offer.entity';
 import {
 	Column,
 	Entity,
+	JoinTable,
 	ManyToMany,
 	OneToMany,
 	PrimaryGeneratedColumn,
@@ -31,5 +32,6 @@ export class Brand {
 	@ManyToMany(() => Category, category => category.brands, {
 		onDelete: 'CASCADE',
 	})
+	@JoinTable()
 	categories: Category[];
 }

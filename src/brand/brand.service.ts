@@ -102,4 +102,26 @@ export class BrandService {
 		}
 		return brand;
 	}
+
+	async removeCategory(brandId: number, categoryId: number) {
+		const category = await this.categoryService.byId(categoryId);
+
+		const brand = await this.brandRepo.findOne({
+			where: { id: brandId },
+			relations: {
+				categories: true,
+			},
+		});
+		if (!brand) {
+			throw new NotFoundException('Бренда не существует!');
+		}
+
+		const newCategories = brand.categories.filter(
+			cat => cat.id !== category.id
+		);
+
+		brand.categories = newCategories;
+		await this.brandRepo.save(brand);
+		return true;
+	}
 }

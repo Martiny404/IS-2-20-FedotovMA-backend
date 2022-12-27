@@ -5,6 +5,7 @@ import {
 	IsString,
 	Length,
 	Max,
+	Min,
 } from 'class-validator';
 import { ProductStatus } from '../entities/product.entity';
 
@@ -34,9 +35,9 @@ export class updateProductDto {
 
 	@IsOptional()
 	@IsNumber()
-	@IsPositive()
+	@Min(0)
 	@Max(99)
-	discount_percentage?: number;
+	discount_percentage: number;
 
 	@IsString()
 	@IsOptional()
