@@ -70,6 +70,47 @@ export class CategoryService {
 		});
 		return category;
 	}
+
+	async getInfo(id: number) {
+		const category = await this.categoryRepo.findOne({
+			where: { id },
+			relations: {
+				options: true,
+				products: {
+					brand: true,
+					category: true,
+					rating: true,
+				},
+			},
+			order: {
+				products: {
+					views: 'DESC',
+				},
+			},
+		});
+		if (!category) {
+			throw new NotFoundException('Категории не существует!');
+		}
+
+		const products = category.products.slice(0, 3).map(p => {
+			const r = {
+				...p,
+				rating: p.rating.reduce((acc, v) => {
+					return acc + v.rate;
+				}, 0),
+			};
+			return {
+				...r,
+				rating: r.rating ? r.rating / p.rating.length : 0,
+			};
+		});
+
+		return {
+			...category,
+			products,
+		};
+	}
+
 	async byId(id: number) {
 		const category = await this.categoryRepo.findOne({
 			where: { id },
@@ -80,6 +121,7 @@ export class CategoryService {
 		if (!category) {
 			throw new NotFoundException('Категории не существует!');
 		}
+
 		return category;
 	}
 

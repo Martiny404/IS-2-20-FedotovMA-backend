@@ -1,17 +1,7 @@
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	UseFilters,
-} from '@nestjs/common';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { CreateOptionDto } from './dto/createOptionDto';
 import { OptionService } from './option.service';
 
-@UseFilters(HttpExceptionFilter)
 @Controller('option')
 export class OptionController {
 	constructor(private readonly optionService: OptionService) {}

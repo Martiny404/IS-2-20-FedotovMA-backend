@@ -7,16 +7,13 @@ import {
 	Patch,
 	Post,
 	Req,
-	UseFilters,
 } from '@nestjs/common';
 
 import { CheckAuth } from 'src/decorators/auth.decorator';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { updateUserInfoDto } from './dto/update-user-info.dto';
 
 import { UserService } from './user.service';
 
-@UseFilters(HttpExceptionFilter)
 @Controller('user')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
@@ -77,23 +74,23 @@ export class UserController {
 	}
 
 	@CheckAuth('user', true)
-	@Patch('/basket/increment')
+	@Patch('/basket/increment/:id')
 	async incrementBasketItemQuantity(
-		@Body('productId') productId: number,
+		@Param('id') productId: string,
 		@Req() req
 	) {
 		const userId = req.user.id;
-		return this.userService.incrementBasketItemQuantity(userId, productId);
+		return this.userService.incrementBasketItemQuantity(userId, +productId);
 	}
 
 	@CheckAuth('user', true)
-	@Patch('/basket/decrement')
+	@Patch('/basket/decrement/:id')
 	async decrementBasketItemQuantity(
-		@Body('productId') productId: number,
+		@Param('id') productId: string,
 		@Req() req
 	) {
 		const userId = req.user.id;
-		return this.userService.decrementBasketItemQuantity(userId, productId);
+		return this.userService.decrementBasketItemQuantity(userId, +productId);
 	}
 
 	@CheckAuth('user', true)

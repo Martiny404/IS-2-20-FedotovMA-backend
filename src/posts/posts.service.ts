@@ -66,4 +66,17 @@ export class PostsService {
 		});
 		return await this.postsRepo.save(newPost);
 	}
+
+	async incrementViews(postId: number) {
+		const post = await this.postsRepo.findOne({
+			where: {
+				id: postId,
+			},
+		});
+		if (!post) {
+			throw new NotFoundException('Пост не найден!');
+		}
+		post.views += 1;
+		await this.postsRepo.save(post);
+	}
 }

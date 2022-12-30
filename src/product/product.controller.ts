@@ -16,7 +16,6 @@ import { CheckAuth } from 'src/decorators/auth.decorator';
 import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { addOptionsToProductDto } from './dto/add-options.dto';
 import { CreateProductDto } from './dto/create-product.dto';
-import { RateProductDto } from './dto/rate-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
 import { ProductService } from './product.service';
 
@@ -33,18 +32,40 @@ export class ProductController {
 	}
 
 	@Get('/')
-	async getAll(@Query() query) {
+	async getCatalog(@Query() query) {
 		const categoryId = query.categoryId ? +query.categoryId : undefined;
 		const brandId = query.brandId ? +query.brandId : undefined;
 		const page = query.page ? +query.page : undefined;
 		const filters = query.filters ? JSON.parse(query.filters) : [];
 
-		return await this.productService.all(categoryId, page, brandId, filters);
+		return await this.productService.getCatalog(
+			categoryId,
+			page,
+			brandId,
+			filters
+		);
+	}
+
+	@Get('/all')
+	async getAll() {
+		return this.productService.all();
 	}
 
 	@Get('/search')
 	async search(@Query('searchTerm') searchTerm: string) {
 		return this.productService.search(searchTerm);
+	}
+
+	@Post('/views/:id')
+	async incrementViews(@Param('id') id: string) {
+		return this.productService.incrementViews(+id);
+	}
+
+	@CheckAuth('user')
+	@Get('/user-product-rate/:id')
+	async getUserProductRate(@Param('id') id: string, @Req() req) {
+		const userId = req.user.id;
+		return this.productService.getUserProdcutRate(userId, +id);
 	}
 
 	@Get('/info/:id')
@@ -80,23 +101,20 @@ export class ProductController {
 	}
 
 	@CheckAuth('admin', true)
-	@Post('/toggle-hidden/:id')
-	async toggleHidden(@Param('id') id: string, @Res() res: Response) {
-		const prod = await this.productService.toggleHidden(+id);
-		res.status(200).json(prod);
-	}
-
-	@CheckAuth('admin', true)
 	@Patch('/delete-options/:id')
 	async deleteOptions(@Param('id') id: string, @Body('key') key: string) {
 		return this.productService.deleteOptions(+id, key);
 	}
 
 	@CheckAuth('user', true)
-	@Post('/rate-product')
-	async evaluteProduct(@Body() dto: RateProductDto, @Req() req) {
+	@Post('/evalute-product/:id')
+	async evaluteProduct(
+		@Param('id') id: string,
+		@Body('rate') rate: number,
+		@Req() req
+	) {
 		const userId = req.user.id;
-		return this.productService.evaluteProduct(userId, dto.productId, dto.rate);
+		return this.productService.evaluteProduct(userId, +id, rate);
 	}
 
 	@Get('/rate-product/:id')

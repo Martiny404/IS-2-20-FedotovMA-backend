@@ -6,15 +6,12 @@ import {
 	Param,
 	Patch,
 	Post,
-	UseFilters,
 } from '@nestjs/common';
 import { CheckAuth } from 'src/decorators/auth.decorator';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsService } from './posts.service';
 
-@UseFilters(HttpExceptionFilter)
 @Controller('posts')
 export class PostsController {
 	constructor(private readonly postsService: PostsService) {}
@@ -39,6 +36,11 @@ export class PostsController {
 	@Patch('/:id')
 	async editPost(@Param('id') id: string, dto: UpdatePostDto) {
 		return this.postsService.editPost(+id, dto);
+	}
+
+	@Post('/views/:id')
+	async incrementViews(@Param('id') id: string) {
+		return this.postsService.incrementViews(+id);
 	}
 
 	@CheckAuth('admin', true)

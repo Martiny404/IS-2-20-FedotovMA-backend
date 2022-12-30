@@ -16,13 +16,12 @@ export class StatisticsService {
 
 	async countOrdersProducts(category?: string, brand?: string) {
 		let queryString = `
-		SELECT product.name as product_name, product.status as product_status, product.updated_at, product.created_at, product.views, product.in_stock, product.poster, product.price, product.description,product."options", product.discount_percentage, product.id as id,  brand.name as brand_name, category.name as category_name, brand.id as brand_id, category.id as category_id, count(order_product.product_id)AS c, AVG(rating.rate) as rating FROM product
+		SELECT DISTINCT ON (product.id) product.name as product_name, product.status as product_status, product.updated_at, product.created_at, product.views, product.in_stock, product.poster, product.price, product.description,product."options", product.discount_percentage, product.id as id,  brand.name as brand_name, category.name as category_name, brand.id as brand_id, category.id as category_id, count(order_product.product_id)AS c, AVG(rating.rate) as rating FROM product
 		LEFT JOIN order_product on order_product.product_id = product.id
 		LEFT JOIN brand on brand."id" = product.brand_id
 		LEFT JOIN rating on product."id" = rating.product_id
 		LEFT JOIN category on category."id" = product.category_id
 		GROUP BY product.id, category.id, brand.id, rating.id
-	 ORDER BY C DESC
 		`;
 		if (category && !brand) {
 			queryString += ` HAVING category.name = ${category};`;
@@ -35,8 +34,7 @@ export class StatisticsService {
 		}
 		queryString += ' LIMIT 9';
 		const q = await this.productRepo.query(queryString);
-		//return q.sort((a: any, b: any) => b.c - a.c);
-		return q;
+		return q.sort((a: any, b: any) => b.c - a.c);
 	}
 
 	async getOrdersByDateRange(start?: string, end?: string) {

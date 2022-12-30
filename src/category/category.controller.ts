@@ -6,14 +6,11 @@ import {
 	Param,
 	Patch,
 	Post,
-	UseFilters,
 } from '@nestjs/common';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
-@UseFilters(HttpExceptionFilter)
 @Controller('category')
 export class CategoryController {
 	constructor(private readonly categoryService: CategoryService) {}
@@ -41,6 +38,11 @@ export class CategoryController {
 	@Get('/:id')
 	async byId(@Param('id') id: string) {
 		return this.categoryService.byId(+id);
+	}
+
+	@Get('/info/:id')
+	async getInfo(@Param('id') id: string) {
+		return this.categoryService.getInfo(+id);
 	}
 
 	@Get('/all-options/:id')

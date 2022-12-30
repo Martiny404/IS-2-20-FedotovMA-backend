@@ -1,9 +1,7 @@
-import { Controller, Get, Query, UseFilters } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { CheckAuth } from 'src/decorators/auth.decorator';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { StatisticsService } from './statistics.service';
 
-@UseFilters(HttpExceptionFilter)
 @Controller('statistics')
 export class StatisticsController {
 	constructor(private readonly statisticsService: StatisticsService) {}

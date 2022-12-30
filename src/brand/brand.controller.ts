@@ -6,14 +6,11 @@ import {
 	Param,
 	Patch,
 	Post,
-	UseFilters,
 } from '@nestjs/common';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 
-@UseFilters(HttpExceptionFilter)
 @Controller('brand')
 export class BrandController {
 	constructor(private readonly brandService: BrandService) {}

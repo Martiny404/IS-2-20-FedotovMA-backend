@@ -131,9 +131,20 @@ export class UserService {
 			where: {
 				user: { id: userId },
 			},
-			relations: { product: { category: true, brand: true } },
+			relations: { product: { category: true, brand: true, rating: true } },
 		});
-		return wishlist;
+
+		const wish = wishlist.map(w => {
+			const rating = w.product.rating.reduce((acc, v) => (acc += v.rate), 0);
+			return {
+				...w,
+				product: {
+					...w.product,
+					rating: rating ? rating / w.product.rating.length : 0,
+				},
+			};
+		});
+		return wish;
 	}
 
 	async getMe(userId: number) {
@@ -153,6 +164,7 @@ export class UserService {
 		if (!user) {
 			throw new NotFoundException('Пользователь не найден!');
 		}
+
 		return user;
 	}
 
@@ -163,7 +175,17 @@ export class UserService {
 			},
 			relations: { product: { category: true, brand: true, rating: true } },
 		});
-		return basket;
+		const b = basket.map(w => {
+			const rating = w.product.rating.reduce((acc, v) => (acc += v.rate), 0);
+			return {
+				...w,
+				product: {
+					...w.product,
+					rating: rating ? rating / w.product.rating.length : 0,
+				},
+			};
+		});
+		return b;
 	}
 
 	async addToBasket(userId: number, productId: number) {

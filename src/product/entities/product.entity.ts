@@ -31,9 +31,6 @@ export class Product extends Base {
 	@Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.ON_SALE })
 	status: ProductStatus;
 
-	@Column({ type: 'boolean', default: false })
-	hidden: boolean;
-
 	@Column({ type: 'float' })
 	price: number;
 

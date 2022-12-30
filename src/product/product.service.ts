@@ -70,6 +70,15 @@ export class ProductService {
 		return products;
 	}
 
+	async incrementViews(productId: number) {
+		const product = await this.byId(productId);
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		product.views += 1;
+		await this.productRepo.save(product);
+	}
+
 	async deleteProduct(productId: number) {
 		const product = await this.byId(productId);
 		if (!product) {
@@ -156,7 +165,7 @@ export class ProductService {
 		return product;
 	}
 
-	async all(
+	async getCatalog(
 		categoryId?: number,
 		page: number = 1,
 		brandId?: number,
@@ -210,6 +219,10 @@ export class ProductService {
 		};
 	}
 
+	async all() {
+		return this.productRepo.find();
+	}
+
 	async getProductInfo(id: number) {
 		const product = await this.productRepo.findOne({
 			where: { id },
@@ -232,7 +245,7 @@ export class ProductService {
 
 		return {
 			...product,
-			rating: rating,
+			rating: rating ? rating / product.rating.length : 0,
 			productOrders: count,
 		};
 	}
@@ -250,15 +263,6 @@ export class ProductService {
 			product: { id: product.id },
 		});
 		return this.productImgRepo.save(img);
-	}
-
-	async toggleHidden(id: number) {
-		const product = await this.productRepo.findOne({ where: { id } });
-		if (!product) {
-			throw new BadRequestException('Продукта не существует!');
-		}
-		product.hidden = !product.hidden;
-		return await this.productRepo.save(product);
 	}
 
 	async update(id: number, dto: updateProductDto) {
@@ -298,22 +302,40 @@ export class ProductService {
 		return this.ratingRepo.save(productRate);
 	}
 
-	async getAverageRate(productId: number) {
-		const avg = await this.ratingRepo
-			.createQueryBuilder('rating')
-			.select('AVG(rating.rate)', 'average')
-			.where('rating.product = :id', { id: productId })
-			.getRawOne<{ average: string }>();
+	async getUserProdcutRate(userId: number, productId: number) {
+		const user = await this.userService.byId(userId);
+		const product = await this.byId(productId);
 
-		if (avg.average) {
-			return {
-				avg: parseFloat(avg.average),
-			};
-		} else {
-			return {
-				avg: 0,
-			};
+		if (!user || !product) {
+			throw new NotFoundException('Продукт или пользователь не найден!');
 		}
+
+		const rate = await this.ratingRepo.findOne({
+			where: { user: { id: userId }, product: { id: productId } },
+		});
+
+		if (!rate) {
+			return 'Вы еще не поставили оценку!';
+		}
+
+		return rate.rate;
+	}
+
+	async getAverageRate(productId: number) {
+		const product = await this.productRepo.findOne({
+			where: { id: productId },
+			relations: {
+				rating: true,
+			},
+		});
+		if (!product) {
+			throw new NotFoundException('Продукт не найден!');
+		}
+		const rating = product.rating.reduce((acc, v) => {
+			return acc + v.rate;
+		}, 0);
+
+		return rating ? rating / product.rating.length : 0;
 	}
 
 	async returnProductFromOrder(id: number, q: number) {

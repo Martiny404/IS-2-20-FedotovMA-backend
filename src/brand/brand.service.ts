@@ -85,12 +85,42 @@ export class BrandService {
 	async getBrandInfo(id: number) {
 		const brand = await this.brandRepo.findOne({
 			where: { id },
-			relations: { products: true, categories: true, offers: true },
+			relations: {
+				products: {
+					category: true,
+					brand: true,
+					rating: true,
+				},
+				categories: true,
+				offers: true,
+			},
+			order: {
+				products: {
+					views: 'DESC',
+				},
+			},
 		});
 		if (!brand) {
 			throw new NotFoundException('Бренда не существует!');
 		}
-		return brand;
+
+		const products = brand.products.slice(0, 3).map(p => {
+			const r = {
+				...p,
+				rating: p.rating.reduce((acc, v) => {
+					return acc + v.rate;
+				}, 0),
+			};
+			return {
+				...r,
+				rating: r.rating ? r.rating / p.rating.length : 0,
+			};
+		});
+
+		return {
+			...brand,
+			products,
+		};
 	}
 
 	async byId(id: number) {
