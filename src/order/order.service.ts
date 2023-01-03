@@ -131,7 +131,12 @@ export class OrderService {
 
 	async getOrder(id: number, userId: number) {
 		const order = await this.orderRepo.findOne({
-			where: { id, user: { id: userId } },
+			where: {
+				id: id,
+				user: {
+					id: userId,
+				},
+			},
 			relations: {
 				orderProducts: { product: { category: true, brand: true } },
 				user: true,
@@ -274,7 +279,7 @@ export class OrderService {
 	}
 
 	async cancleOrder(userId: number, orderId: number) {
-		const order = await this.getOrder(userId, orderId);
+		const order = await this.getOrder(orderId, userId);
 		await this.productService.returnSeveralProductsFromOrder(
 			order.orderProducts
 		);

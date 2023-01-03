@@ -6,10 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { OptionService } from 'src/option/option.service';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
-import { IFilter } from 'src/types/producr-filter.types';
+import { ISortType } from 'src/types/producr-filter.types';
 import { UserService } from 'src/user/user.service';
-import { FindOperator, ILike, In, MoreThan, Repository } from 'typeorm';
+import { ILike, Like, MoreThan, Repository } from 'typeorm';
 import { addOptionsToProductDto } from './dto/add-options.dto';
+import { CatalogDto } from './dto/catalog.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
 import { ProductImages } from './entities/product-imgs.entity';
@@ -165,12 +166,15 @@ export class ProductService {
 		return product;
 	}
 
-	async getCatalog(
-		categoryId?: number,
-		page: number = 1,
-		brandId?: number,
-		filters: IFilter[] = []
-	) {
+	async getCatalog({
+		brandId,
+		categoryId,
+		discount,
+		filters,
+		page,
+		sort,
+		type,
+	}: CatalogDto) {
 		let offset = page * 9 - 9;
 
 		const p = this.productRepo
@@ -180,24 +184,46 @@ export class ProductService {
 			.leftJoinAndSelect('p.rating', 'r')
 			.leftJoinAndSelect('p.productOrders', 'op');
 
-		if (categoryId) {
+		if (categoryId && brandId && discount) {
+			p.where('c.id = :id', { id: categoryId });
+			p.andWhere('b.id = :id', { id: brandId });
+			p.andWhere('p.discount_percentage > 0');
+		} else if (!brandId && categoryId && discount) {
+			p.where('c.id = :id', { id: categoryId });
+			p.andWhere('p.discount_percentage > 0');
+		} else if (!categoryId && brandId) {
+			p.where('b.id = :id', { id: brandId });
+		} else if (categoryId && brandId) {
+			p.where('c.id = :id', { id: categoryId });
+			p.andWhere('b.id = :id', { id: brandId });
+		} else if (categoryId && !brandId && !discount) {
 			p.where('c.id = :id', { id: categoryId });
 		}
 
-		if (brandId) {
-			p.where('b.id = :id', { id: brandId });
-		}
+		// if (categoryId) {
+		// 	p.where('c.id = :id', { id: categoryId });
+		// }
 
-		for (const filter of filters) {
-			const values = filter.value.map(v => `'${v}'`).join();
-			p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
+		// if (brandId) {
+		// 	p.where('b.id = :id', { id: brandId });
+		// }
+
+		// if (discount) {
+		// 	p.where('p.discount_percentage > 0');
+		// }
+
+		if (filters.length > 0) {
+			for (const filter of filters) {
+				const values = filter.value.map(v => `'${v}'`).join();
+				p.andWhere(`p.options ->> '${filter.key}' IN (${values})`);
+			}
 		}
 		p.offset(offset);
 		p.limit(9);
 
 		const response = await p.getManyAndCount();
 
-		const product = response[0].map(p => {
+		const products = response[0].map(p => {
 			const r = {
 				...p,
 				rating: p.rating.reduce((acc, v) => {
@@ -211,11 +237,18 @@ export class ProductService {
 			};
 		});
 
-		//[{"key": "hdd", "value": ["256gb"]}]
+		const sorted = products.sort((a, b) => {
+			if (type == ISortType.ASC) {
+				return a[sort] - b[sort];
+			}
+			if (type == ISortType.DESC) {
+				return b[sort] - a[sort];
+			}
+		});
 
 		return {
 			count: response[1],
-			products: product,
+			products: sorted,
 		};
 	}
 

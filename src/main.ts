@@ -18,8 +18,8 @@ async function bootstrap() {
 
 	const PORT = process.env.PORT ?? 5000;
 
-	const httpAdapterHost = app.get(HttpAdapterHost);
-	app.useGlobalPipes(new ValidationPipe());
+	//const httpAdapterHost = app.get(HttpAdapterHost);
+	app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
 	//app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
 

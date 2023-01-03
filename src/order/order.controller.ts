@@ -77,7 +77,7 @@ export class OrderController {
 	}
 
 	@CheckAuth('user', true)
-	@Delete('/cancle/:id')
+	@Patch('/cancle/:id')
 	async cancleOrder(@Param('id') id: string, @Req() req) {
 		const userId = req.user.id;
 		return this.orderService.cancleOrder(userId, +id);

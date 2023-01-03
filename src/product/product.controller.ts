@@ -5,16 +5,13 @@ import {
 	Param,
 	Patch,
 	Post,
-	Res,
 	Req,
 	Delete,
 	Query,
-	UseFilters,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { CheckAuth } from 'src/decorators/auth.decorator';
-import { HttpExceptionFilter } from 'src/global-filters/http-exception.filter';
 import { addOptionsToProductDto } from './dto/add-options.dto';
+import { CatalogDto } from './dto/catalog.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { updateProductDto } from './dto/update-product.dto';
 import { ProductService } from './product.service';
@@ -32,18 +29,8 @@ export class ProductController {
 	}
 
 	@Get('/')
-	async getCatalog(@Query() query) {
-		const categoryId = query.categoryId ? +query.categoryId : undefined;
-		const brandId = query.brandId ? +query.brandId : undefined;
-		const page = query.page ? +query.page : undefined;
-		const filters = query.filters ? JSON.parse(query.filters) : [];
-
-		return await this.productService.getCatalog(
-			categoryId,
-			page,
-			brandId,
-			filters
-		);
+	async getCatalog(@Query() query: CatalogDto) {
+		return await this.productService.getCatalog(query);
 	}
 
 	@Get('/all')

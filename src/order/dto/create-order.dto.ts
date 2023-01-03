@@ -1,6 +1,5 @@
 export class OrderProductDto {
 	quantity: number;
-
 	productId: number;
 }
 

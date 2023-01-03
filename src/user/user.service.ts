@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Wishlist } from './entities/wishlist.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Basket } from './entities/basket.entity';
 import { OrderProduct } from 'src/order/entities/order-product.entity';
 import { updateUserInfoDto } from './dto/update-user-info.dto';
@@ -14,6 +14,7 @@ import { generateCode } from 'src/utils/generateCode';
 import { MailService } from 'src/mail/mail.service';
 import { compare, hash } from 'bcryptjs';
 import { CheckAuth } from 'src/decorators/auth.decorator';
+import { OrderStatus } from 'src/order/entities/order.entity';
 
 @Injectable()
 export class UserService {
@@ -47,7 +48,7 @@ export class UserService {
 	}
 
 	async updateUserInfo(userId: number, dto: updateUserInfoDto) {
-		if (!dto.email && !dto.password) {
+		if (!dto.email && !dto.password && !dto.avatar) {
 			return false;
 		}
 		const user = await this.byId(userId);
@@ -149,16 +150,24 @@ export class UserService {
 
 	async getMe(userId: number) {
 		const user = await this.userRepo.findOne({
-			where: { id: userId },
+			where: {
+				id: userId,
+				orders: {
+					orderStatus: Not(OrderStatus.CANCELLED),
+				},
+			},
 			relations: {
 				orders: {
 					orderProducts: {
 						product: {
 							category: true,
 							brand: true,
+							rating: true,
+							images: true,
 						},
 					},
 				},
+				role: true,
 			},
 		});
 		if (!user) {

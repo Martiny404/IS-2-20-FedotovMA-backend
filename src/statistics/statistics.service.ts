@@ -21,7 +21,7 @@ export class StatisticsService {
 		LEFT JOIN brand on brand."id" = product.brand_id
 		LEFT JOIN rating on product."id" = rating.product_id
 		LEFT JOIN category on category."id" = product.category_id
-		GROUP BY product.id, category.id, brand.id, rating.id
+		GROUP BY product.id, category.id, brand.id
 		`;
 		if (category && !brand) {
 			queryString += ` HAVING category.name = ${category};`;

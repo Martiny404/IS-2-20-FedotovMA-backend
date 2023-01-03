@@ -32,7 +32,7 @@ export class UserController {
 	}
 
 	@CheckAuth('user', true)
-	@Get('/get-validation-code')
+	@Patch('/add-validation-code')
 	async getValidationCode(@Req() req) {
 		const userId = req.user.id;
 		return this.userService.addValidationCodeToUser(userId);
