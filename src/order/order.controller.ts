@@ -38,17 +38,21 @@ export class OrderController {
 	}
 
 	@CheckAuth('user', true)
-	@Post('/send-code/')
-	async sendActivationCode(@Body('orderId') orderId: number, @Req() req) {
+	@Patch('/send-code/:id')
+	async sendActivationCode(@Param('id') id: string, @Req() req) {
 		const userId = req.user.id;
-		return this.orderService.sendValidationCode(userId, orderId);
+		return this.orderService.sendValidationCode(userId, +id);
 	}
 
 	@CheckAuth('user', true)
-	@Post('/activate')
-	async activateOrder(@Body() dto: ActivateOrderDto, @Req() req) {
+	@Patch('/activate/:id')
+	async activateOrder(
+		@Param('id') id: string,
+		@Body('') dto: ActivateOrderDto,
+		@Req() req
+	) {
 		const userId = req.user.id;
-		return this.orderService.activateOrder(userId, dto.orderId, dto.code);
+		return this.orderService.activateOrder(userId, +id, dto.code);
 	}
 
 	@CheckAuth('user', true)
